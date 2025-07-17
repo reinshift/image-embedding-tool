@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景渐变圆形 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#24d37a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1cb967;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- 主背景 -->
+  <circle cx="25" cy="25" r="24" fill="url(#bgGradient)"/>
+
+  <!-- 主图标 - 现代化图像框架 -->
+  <rect x="10" y="14" width="30" height="22" rx="4" fill="none" stroke="white" stroke-width="2.5"/>
+
+  <!-- 内部图像表示 -->
+  <rect x="13" y="17" width="24" height="16" rx="2" fill="white" fill-opacity="0.2"/>
+
+  <!-- 现代化网格 -->
+  <path d="M13 21 L37 21 M13 25 L37 25 M13 29 L37 29" stroke="white" stroke-width="1" stroke-opacity="0.4"/>
+  <path d="M19 17 L19 33 M25 17 L25 33 M31 17 L31 33" stroke="white" stroke-width="1" stroke-opacity="0.4"/>
+
+  <!-- 变换指示器 -->
+  <path d="M16 10 L21 8 L21 12 Z" fill="url(#iconGradient)"/>
+  <path d="M34 40 L29 42 L29 38 Z" fill="url(#iconGradient)"/>
+
+  <!-- 矩阵符号 - 更现代的字体 -->
+  <text x="40" y="16" font-family="Arial, sans-serif" font-size="10" fill="white" font-weight="bold">H</text>
+
+  <!-- 装饰点 - 更大更明显 -->
+  <circle cx="16" cy="21" r="2" fill="url(#iconGradient)"/>
+  <circle cx="34" cy="21" r="2" fill="url(#iconGradient)"/>
+  <circle cx="34" cy="29" r="2" fill="url(#iconGradient)"/>
+  <circle cx="16" cy="29" r="2" fill="url(#iconGradient)"/>
+
+  <!-- 中心亮点 -->
+  <circle cx="25" cy="25" r="1.5" fill="white" fill-opacity="0.8"/>
+</svg>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原理介绍 - 图像嵌入工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+    <link rel="stylesheet" href="theory-style.css">
+</head>
+<body>
+    <div class="theory-container">
+        <!-- 导航栏 -->
+        <nav class="theory-nav">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <img src="default-logo.svg" alt="Logo" class="nav-logo">
+                    <span class="nav-title">原理介绍</span>
+                </div>
+                <button class="back-btn" onclick="window.history.back()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    返回应用
+                </button>
+            </div>
+        </nav>
+
+        <!-- 主内容 -->
+        <div class="theory-content">
+            <div class="container">
+                <!-- 目录 -->
+                <div class="toc-section">
+                    <h2 class="toc-title">目录</h2>
+                    <ul class="toc-list">
+                        <li><a href="#homography-intro">1. 单应性矩阵基础</a></li>
+                        <li><a href="#matrix-theory">2. 矩阵理论基础</a></li>
+                        <li><a href="#pseudo-inverse">3. 矩阵广义逆</a></li>
+                        <li><a href="#dlt-method">4. DLT算法原理</a></li>
+                        <li><a href="#implementation">5. 项目实现原理</a></li>
+                        <li><a href="#applications">6. 应用场景</a></li>
+                    </ul>
+                </div>
+
+                <!-- 1. 单应性矩阵基础 -->
+                <section id="homography-intro" class="theory-section">
+                    <h2 class="section-title">1. 单应性矩阵基础</h2>
+                    
+                    <div class="content-block">
+                        <h3>1.1 什么是单应性变换</h3>
+                        <p>单应性变换（Homography）是计算机视觉中的一个重要概念，它描述了两个平面之间的投影变换关系。在图像处理中，单应性矩阵可以将一个平面上的点映射到另一个平面上的对应点。</p>
+                        
+                        <div class="math-block">
+                            <p>数学表达式：</p>
+                            <div class="katex-display" id="homography-eq1"></div>
+                        </div>
+                        
+                        <p>其中 <span class="inline-math" id="h-matrix"></span> 是 3×3 的单应性矩阵，<span class="inline-math" id="point-src"></span> 和 <span class="inline-math" id="point-dst"></span> 分别是源点和目标点的齐次坐标。</p>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>1.2 单应性矩阵的性质</h3>
+                        <ul class="property-list">
+                            <li><strong>可逆性：</strong>单应性矩阵是可逆的，存在逆变换</li>
+                            <li><strong>齐次性：</strong>矩阵可以乘以任意非零常数而不改变变换</li>
+                            <li><strong>自由度：</strong>具有8个自由度（9个元素减去1个尺度因子）</li>
+                            <li><strong>保持直线性：</strong>直线在变换后仍然是直线</li>
+                        </ul>
+                    </div>
+
+                    <div class="visual-demo">
+                        <h3>1.3 变换效果演示</h3>
+                        <div class="demo-container">
+                            <canvas id="homography-demo" width="400" height="300"></canvas>
+                            <div class="demo-controls">
+                                <button class="demo-btn" onclick="animateHomography()">播放动画</button>
+                                <button class="demo-btn" onclick="resetDemo()">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 矩阵理论基础 -->
+                <section id="matrix-theory" class="theory-section">
+                    <h2 class="section-title">2. 矩阵理论基础</h2>
+                    
+                    <div class="content-block">
+                        <h3>2.1 线性方程组</h3>
+                        <p>单应性矩阵的计算本质上是求解线性方程组的问题。给定n对对应点，我们可以建立如下的线性方程组：</p>
+                        
+                        <div class="math-block">
+                            <div class="katex-display" id="linear-system"></div>
+                        </div>
+                        
+                        <p>其中 <strong>A</strong> 是系数矩阵，<strong>h</strong> 是待求的单应性矩阵向量化形式。</p>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>2.2 最小二乘解</h3>
+                        <p>当方程组超定时（点对数量大于4），我们需要求解最小二乘解：</p>
+                        
+                        <div class="math-block">
+                            <div class="katex-display" id="least-squares"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 矩阵广义逆 -->
+                <section id="pseudo-inverse" class="theory-section">
+                    <h2 class="section-title">3. 矩阵广义逆</h2>
+                    
+                    <div class="content-block">
+                        <h3>3.1 广义逆的定义</h3>
+                        <p>对于矩阵 <strong>A</strong>，其广义逆（伪逆）<strong>A</strong><sup>+</sup> 满足以下性质：</p>
+                        
+                        <div class="math-block">
+                            <div class="katex-display" id="pseudo-inverse-def"></div>
+                        </div>
+                        
+                        <p>广义逆在处理超定或欠定线性方程组时具有重要作用。</p>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>3.2 SVD分解与广义逆</h3>
+                        <p>通过奇异值分解（SVD），我们可以计算矩阵的广义逆：</p>
+                        
+                        <div class="math-block">
+                            <div class="katex-display" id="svd-decomposition"></div>
+                        </div>
+                        
+                        <p>其中 <strong>Σ</strong><sup>+</sup> 是 <strong>Σ</strong> 的广义逆，通过将非零奇异值取倒数得到。</p>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>3.3 在单应性计算中的应用</h3>
+                        <p>在单应性矩阵计算中，我们利用广义逆来求解齐次线性方程组 <strong>Ah</strong> = <strong>0</strong> 的最小范数解。这个解对应于 <strong>A</strong><sup>T</sup><strong>A</strong> 的最小特征值对应的特征向量。</p>
+                    </div>
+                </section>
+
+                <!-- 4. DLT算法原理 -->
+                <section id="dlt-method" class="theory-section">
+                    <h2 class="section-title">4. DLT算法原理</h2>
+                    
+                    <div class="content-block">
+                        <h3>4.1 直接线性变换（DLT）</h3>
+                        <p>DLT是计算单应性矩阵的经典算法。对于每一对对应点 (x<sub>i</sub>, y<sub>i</sub>) ↔ (x'<sub>i</sub>, y'<sub>i</sub>)，我们可以建立两个线性方程：</p>
+                        
+                        <div class="math-block">
+                            <div class="katex-display" id="dlt-equations"></div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>4.2 算法步骤</h3>
+                        <ol class="algorithm-steps">
+                            <li><strong>构建系数矩阵：</strong>根据对应点对构建线性方程组</li>
+                            <li><strong>求解齐次方程：</strong>找到 <strong>Ah</strong> = <strong>0</strong> 的最小范数解</li>
+                            <li><strong>重构矩阵：</strong>将解向量重新排列为3×3矩阵</li>
+                            <li><strong>归一化：</strong>通常将 h<sub>33</sub> 归一化为1</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- 5. 项目实现原理 -->
+                <section id="implementation" class="theory-section">
+                    <h2 class="section-title">5. 项目实现原理</h2>
+                    
+                    <div class="content-block">
+                        <h3>5.1 JavaScript实现策略</h3>
+                        <p>本项目采用纯JavaScript实现单应性变换，主要包含以下模块：</p>
+                        
+                        <div class="implementation-diagram">
+                            <div class="module-box">
+                                <h4>矩阵运算模块</h4>
+                                <ul>
+                                    <li>矩阵乘法</li>
+                                    <li>矩阵转置</li>
+                                    <li>高斯消元法</li>
+                                </ul>
+                            </div>
+                            <div class="arrow">→</div>
+                            <div class="module-box">
+                                <h4>单应性计算模块</h4>
+                                <ul>
+                                    <li>DLT算法实现</li>
+                                    <li>最小二乘求解</li>
+                                    <li>矩阵求逆</li>
+                                </ul>
+                            </div>
+                            <div class="arrow">→</div>
+                            <div class="module-box">
+                                <h4>图像处理模块</h4>
+                                <ul>
+                                    <li>透视变换</li>
+                                    <li>双线性插值</li>
+                                    <li>图像合成</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>5.2 核心算法流程</h3>
+                        <div class="algorithm-flow">
+                            <div class="flow-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>输入处理</h4>
+                                    <p>获取用户选择的4个对应点坐标</p>
+                                </div>
+                            </div>
+                            <div class="flow-arrow">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>构建线性方程组</h4>
+                                    <p>根据DLT算法构建8×9的系数矩阵</p>
+                                </div>
+                            </div>
+                            <div class="flow-arrow">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>求解单应性矩阵</h4>
+                                    <p>使用简化的最小二乘方法求解</p>
+                                </div>
+                            </div>
+                            <div class="flow-arrow">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>图像变换</h4>
+                                    <p>应用透视变换并进行图像合成</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>5.3 关键技术细节</h3>
+                        <div class="tech-details">
+                            <div class="detail-item">
+                                <h4>🔢 数值稳定性</h4>
+                                <p>采用归一化技术和条件数检查确保计算稳定性</p>
+                            </div>
+                            <div class="detail-item">
+                                <h4>🎯 插值算法</h4>
+                                <p>使用双线性插值保证变换后图像的平滑性</p>
+                            </div>
+                            <div class="detail-item">
+                                <h4>⚡ 性能优化</h4>
+                                <p>采用边界框裁剪和并行处理提高计算效率</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. 应用场景 -->
+                <section id="applications" class="theory-section">
+                    <h2 class="section-title">6. 应用场景</h2>
+                    
+                    <div class="applications-grid">
+                        <div class="app-card">
+                            <div class="app-icon">🏗️</div>
+                            <h3>建筑可视化</h3>
+                            <p>将建筑设计图嵌入到实际场景照片中，实现逼真的效果预览</p>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-icon">📱</div>
+                            <h3>增强现实</h3>
+                            <p>在AR应用中实现虚拟物体与真实场景的精确对齐</p>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-icon">🎬</div>
+                            <h3>影视制作</h3>
+                            <p>在电影后期制作中实现特效与实拍画面的无缝融合</p>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-icon">📊</div>
+                            <h3>文档矫正</h3>
+                            <p>自动矫正拍摄的文档图像，消除透视畸变</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+    <script src="theory.js"></script>
+</body>
+</html>
