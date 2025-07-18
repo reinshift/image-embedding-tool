@@ -1043,6 +1043,262 @@ html {
     color: var(--primary-color);
 }
 
+/* 学术化样式 */
+.definition-box, .theorem-box, .lemma-box {
+    background: var(--math-bg);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.definition-box::before {
+    content: "定义";
+    background: var(--primary-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+    top: -0.5rem;
+    left: -0.5rem;
+}
+
+.theorem-box::before {
+    content: "定理";
+    background: #2563eb;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+    top: -0.5rem;
+    left: -0.5rem;
+}
+
+.lemma-box::before {
+    content: "引理";
+    background: #7c3aed;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+    top: -0.5rem;
+    left: -0.5rem;
+}
+
+.algorithm-box {
+    background: #f8fafc;
+    border: 2px solid #64748b;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.algorithm-box::before {
+    content: "算法";
+    background: #64748b;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+    top: -0.5rem;
+    left: -0.5rem;
+}
+
+.algorithm-steps {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.algorithm-steps li {
+    padding: 0.5rem 0;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.algorithm-steps li::before {
+    content: counter(step-counter);
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    background: var(--primary-color);
+    color: white;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.algorithm-steps {
+    counter-reset: step-counter;
+}
+
+/* 变换层次结构 */
+.transform-hierarchy {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.transform-level {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-light);
+}
+
+/* 数学预备知识 */
+.math-prerequisites {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.prereq-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-top: 3px solid var(--primary-color);
+}
+
+.prereq-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+}
+
+/* 几何解释 */
+.geometric-interpretation {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.interp-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.interp-item:last-child {
+    border-bottom: none;
+}
+
+/* 不变性质 */
+.invariant-properties {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.invariant-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-left: 4px solid #2563eb;
+}
+
+.invariant-item h4 {
+    margin-bottom: 1rem;
+    color: #2563eb;
+}
+
+/* 方法比较 */
+.method-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.method-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-medium);
+    border-top: 4px solid var(--primary-color);
+}
+
+.method-item h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+/* 稳定性分析 */
+.stability-analysis {
+    margin: 2rem 0;
+}
+
+.stability-item {
+    background: #fef3c7;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+}
+
+.stability-item h4 {
+    margin-bottom: 1rem;
+    color: #92400e;
+}
+
+/* 鲁棒方法 */
+.robust-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.robust-item {
+    background: #ecfdf5;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+}
+
+.robust-item h4 {
+    margin-bottom: 0.75rem;
+    color: #047857;
+}
+
+/* 数值考虑 */
+.numerical-considerations {
+    margin: 2rem 0;
+}
+
+.consideration-item {
+    background: #f1f5f9;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #64748b;
+}
+
+.consideration-item h4 {
+    margin-bottom: 1rem;
+    color: #334155;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .correspondence-setup,
@@ -1067,4 +1323,251 @@ html {
     .arch-layer {
         max-width: 100%;
     }
+
+    .method-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .math-prerequisites {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 第7章特定样式 */
+.problem-setup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.setup-item {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.setup-item h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.setup-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.setup-item li {
+    padding: 0.3rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.setup-item li::before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+.calculation-steps {
+    margin: 2rem 0;
+}
+
+.calc-step {
+    background: white;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-left: 4px solid var(--primary-color);
+}
+
+.calc-step h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.transformation-process {
+    margin: 2rem 0;
+}
+
+.transform-step {
+    background: var(--math-bg);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+}
+
+.transform-step h4 {
+    margin-bottom: 1rem;
+    color: #2563eb;
+}
+
+.complexity-analysis {
+    background: var(--light-gray);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.complexity-item {
+    background: white;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 6px;
+    box-shadow: var(--shadow-light);
+}
+
+.complexity-item h4 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.complexity-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.complexity-item li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.complexity-item li:last-child {
+    border-bottom: none;
+}
+
+.practical-considerations {
+    margin: 2rem 0;
+}
+
+.consideration-item {
+    background: #fef9e7;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+}
+
+.consideration-item h4 {
+    margin-bottom: 1rem;
+    color: #92400e;
+}
+
+.final-summary {
+    background: var(--math-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 2px solid var(--primary-color);
+}
+
+.final-summary ol {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+}
+
+.final-summary li {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+}
+
+.final-summary strong {
+    color: var(--primary-color);
+}
+
+/* 内联数学公式样式增强 */
+.inline-math {
+    background: rgba(36, 211, 122, 0.1);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-family: 'KaTeX_Math', 'Times New Roman', serif;
+}
+
+/* 数学块样式增强 */
+.math-block {
+    background: var(--math-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    border-left: 4px solid var(--primary-color);
+    overflow-x: auto;
+}
+
+.math-block p {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* KaTeX显示样式 */
+.katex-display {
+    margin: 1rem 0 !important;
+    text-align: center;
+}
+
+.katex {
+    font-size: 1.1em !important;
+}
+
+/* 改进的属性列表 */
+.properties-list {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.property-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #ddd;
+    line-height: 1.6;
+}
+
+.property-item:last-child {
+    border-bottom: none;
+}
+
+.property-item strong {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+/* 学术化的标题样式 */
+.section-title {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+}
+
+.content-block h3 {
+    color: var(--primary-color);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* 改进的目录样式 */
+.toc-list a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    display: block;
+    border-bottom: 1px solid #eee;
+    transition: all 0.2s ease;
+}
+
+.toc-list a:hover {
+    color: var(--primary-color);
+    padding-left: 1rem;
+    background: rgba(36, 211, 122, 0.05);
 }
