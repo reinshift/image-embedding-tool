@@ -314,3 +314,14 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(block);
     });
 });
+
+// 返回主应用函数
+function goBackToApp() {
+    // 检查是否有历史记录
+    if (document.referrer && document.referrer.includes('app.html')) {
+        window.history.back();
+    } else {
+        // 直接跳转到主应用
+        window.location.href = 'app.html';
+    }
+}

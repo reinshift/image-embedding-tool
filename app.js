@@ -33,7 +33,7 @@ function setupNavbarEvents() {
     const theoryBtn = document.getElementById('theory-btn');
     if (theoryBtn) {
         theoryBtn.addEventListener('click', () => {
-            window.open('theory.html', '_blank');
+            window.location.href = 'theory.html';
         });
     }
     
