@@ -1571,3 +1571,175 @@ html {
     padding-left: 1rem;
     background: rgba(36, 211, 122, 0.05);
 }
+
+/* 问题解释样式 */
+.problem-explanation {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.problem-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+}
+
+.problem-item h4 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.problem-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.problem-item li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.5;
+}
+
+.problem-item li::before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* SVD优势样式 */
+.svd-advantages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.advantage-item {
+    background: #f0f9ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #0ea5e9;
+}
+
+.advantage-item h4 {
+    margin-bottom: 0.75rem;
+    color: #0c4a6e;
+}
+
+/* 应用网格样式 */
+.applications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.application-item {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-medium);
+    border-top: 4px solid var(--primary-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.application-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.application-item h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.application-item p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.application-item strong {
+    color: var(--text-color);
+}
+
+/* 应用总结样式 */
+.application-summary {
+    background: var(--light-gray);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border-left: 4px solid var(--primary-color);
+}
+
+.application-summary h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.application-summary ul {
+    list-style: none;
+    padding: 0;
+}
+
+.application-summary li {
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+    line-height: 1.6;
+    border-bottom: 1px solid #ddd;
+}
+
+.application-summary li:last-child {
+    border-bottom: none;
+}
+
+.application-summary li::before {
+    content: "▶";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.application-summary strong {
+    color: var(--primary-color);
+}
+
+/* 结论样式 */
+.conclusion {
+    background: var(--math-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 2px solid var(--primary-color);
+    font-weight: 500;
+    line-height: 1.7;
+    text-align: justify;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .applications-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .problem-explanation {
+        grid-template-columns: 1fr;
+    }
+
+    .svd-advantages {
+        grid-template-columns: 1fr;
+    }
+
+    .application-item {
+        padding: 1.5rem;
+    }
+}

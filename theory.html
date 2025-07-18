@@ -340,11 +340,58 @@
                     <h2 class="section-title">5. 广义逆理论</h2>
 
                     <div class="content-block">
+                        <h3>5.1 为什么需要广义逆？</h3>
+                        <p>在第4章中，我们得到了齐次线性方程组 <span class="inline-math" id="Ah-zero-intro"></span>。你可能会问：为什么不直接求解 <span class="inline-math" id="A-inverse"></span> 呢？</p>
+
+                        <div class="problem-explanation">
+                            <div class="problem-item">
+                                <h4>🚫 直接求逆的问题</h4>
+                                <ul>
+                                    <li><strong>矩阵不是方阵</strong>：<span class="inline-math" id="A-size-8x9"></span>，无法直接求逆</li>
+                                    <li><strong>齐次方程组</strong>：即使是方阵，<span class="inline-math" id="Ah-zero-problem"></span> 的非零解要求 <span class="inline-math" id="A-singular"></span></li>
+                                    <li><strong>数值稳定性</strong>：接近奇异的矩阵求逆会导致数值不稳定</li>
+                                </ul>
+                            </div>
+
+                            <div class="problem-item">
+                                <h4>✅ 广义逆的优势</h4>
+                                <ul>
+                                    <li><strong>适用于任意矩阵</strong>：无论矩阵是否方阵、是否奇异</li>
+                                    <li><strong>最小范数解</strong>：在所有解中选择范数最小的解</li>
+                                    <li><strong>数值稳定</strong>：通过SVD分解保证计算稳定性</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <p>因此，我们需要引入<strong>广义逆（伪逆）</strong>的概念来处理这类问题。</p>
+                    </div>
+
+                    <div class="content-block">
                         <h3>定义 5.1 (Moore-Penrose广义逆)</h3>
                         <div class="definition-box">
                             <p>对于矩阵 <span class="inline-math" id="matrix-A"></span>，其Moore-Penrose广义逆 <span class="inline-math" id="A-pseudoinverse"></span> 是唯一满足以下四个条件的矩阵：</p>
                             <div class="math-block">
                                 <div class="katex-display" id="mp-conditions"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>5.2 为什么使用SVD分解？</h3>
+                        <p>计算广义逆有多种方法，但<strong>奇异值分解（SVD）</strong>是最稳定和通用的方法：</p>
+
+                        <div class="svd-advantages">
+                            <div class="advantage-item">
+                                <h4>🔢 数值稳定性</h4>
+                                <p>SVD分解在数值计算中非常稳定，即使对于病态矩阵也能给出可靠结果</p>
+                            </div>
+                            <div class="advantage-item">
+                                <h4>📊 几何直观</h4>
+                                <p>SVD揭示了矩阵的几何结构：主方向、拉伸因子、零空间等</p>
+                            </div>
+                            <div class="advantage-item">
+                                <h4>🎯 最优性</h4>
+                                <p>通过SVD计算的广义逆给出最小范数解，具有最优的数学性质</p>
                             </div>
                         </div>
                     </div>
@@ -357,6 +404,8 @@
                                 <div class="katex-display" id="svd-pseudoinverse"></div>
                             </div>
                             <p>其中 <span class="inline-math" id="sigma-plus"></span> 通过将 <span class="inline-math" id="sigma-matrix"></span> 中的非零奇异值取倒数得到。</p>
+
+                            <p><strong>几何意义：</strong>SVD分解将矩阵分解为三个简单变换的复合：旋转→缩放→旋转，广义逆则是这个过程的"最佳逆过程"。</p>
                         </div>
                     </div>
 
@@ -655,46 +704,72 @@
                     </div>
 
                     <div class="content-block">
-                        <h3>7.6 总结</h3>
-                        <div class="final-summary">
-                            <p>通过本章的学习，我们完整地掌握了单应性变换在图像嵌入中的应用：</p>
-                            <ol>
-                                <li><strong>理论基础：</strong>单应性变换的数学定义和性质</li>
-                                <li><strong>求解方法：</strong>DLT算法和广义逆理论</li>
-                                <li><strong>数值计算：</strong>特征值分解和数值稳定性</li>
-                                <li><strong>实际应用：</strong>图像嵌入的完整实现过程</li>
-                            </ol>
-                            <p>这一完整的数学框架为计算机视觉中的许多应用提供了坚实的理论基础。</p>
+                        <h3>7.6 单应矩阵的其他重要应用</h3>
+                        <p>除了图像嵌入，单应性变换在现代科技中有着广泛的应用。以下是一些重要的应用领域：</p>
+
+                        <div class="applications-grid">
+                            <div class="application-item">
+                                <h4>🚗 汽车环视系统</h4>
+                                <p><strong>应用原理：</strong>将车辆四周的鱼眼摄像头图像投影到统一的俯视平面上，形成360°环视图像。</p>
+                                <p><strong>技术要点：</strong>每个摄像头的图像通过单应变换映射到地面平面，然后拼接成完整的俯视图。</p>
+                                <div class="math-block">
+                                    <div class="katex-display" id="surround-view-transform"></div>
+                                </div>
+                            </div>
+
+                            <div class="application-item">
+                                <h4>📱 文档扫描与矫正</h4>
+                                <p><strong>应用原理：</strong>自动检测文档的四个角点，通过单应变换将倾斜的文档图像矫正为标准的矩形。</p>
+                                <p><strong>技术要点：</strong>边缘检测→角点提取→单应矩阵计算→透视矫正。广泛应用于手机扫描APP。</p>
+                            </div>
+
+                            <div class="application-item">
+                                <h4>🏟️ 体育赛事分析</h4>
+                                <p><strong>应用原理：</strong>将不同角度拍摄的比赛画面统一投影到标准场地平面，用于战术分析和轨迹追踪。</p>
+                                <p><strong>技术要点：</strong>利用场地标线作为参考点，建立摄像机视角与标准场地的单应关系。</p>
+                            </div>
+
+                            <div class="application-item">
+                                <h4>🏭 工业视觉检测</h4>
+                                <p><strong>应用原理：</strong>将传送带上不同位置的产品图像统一变换到标准视角，便于缺陷检测和质量控制。</p>
+                                <p><strong>技术要点：</strong>标定板定位→单应矩阵计算→产品图像标准化→缺陷识别。</p>
+                            </div>
+
+                            <div class="application-item">
+                                <h4>🎮 增强现实(AR)</h4>
+                                <p><strong>应用原理：</strong>将虚拟物体准确叠加到真实场景的平面上，如桌面、墙面等。</p>
+                                <p><strong>技术要点：</strong>平面检测→特征点匹配→单应矩阵估计→虚拟物体渲染。</p>
+                                <div class="math-block">
+                                    <div class="katex-display" id="ar-projection"></div>
+                                </div>
+                            </div>
+
+                            <div class="application-item">
+                                <h4>🛰️ 遥感图像配准</h4>
+                                <p><strong>应用原理：</strong>将不同时间、不同传感器获取的遥感图像进行几何配准，用于变化检测。</p>
+                                <p><strong>技术要点：</strong>地面控制点选择→单应变换估计→图像重采样→配准精度评估。</p>
+                            </div>
                         </div>
+
+                        <div class="application-summary">
+                            <h4>🔬 技术发展趋势</h4>
+                            <ul>
+                                <li><strong>实时性提升：</strong>GPU加速和优化算法使单应变换能够实时处理4K视频</li>
+                                <li><strong>鲁棒性增强：</strong>结合深度学习的特征点检测，提高复杂环境下的稳定性</li>
+                                <li><strong>精度优化：</strong>亚像素级的角点检测和非线性优化，达到更高的变换精度</li>
+                                <li><strong>多模态融合：</strong>结合RGB、深度、红外等多种传感器数据的联合标定</li>
+                            </ul>
+                        </div>
+
+                        <p class="conclusion">单应性变换作为计算机视觉的基础工具，在人工智能、自动驾驶、工业4.0等领域发挥着越来越重要的作用。掌握其数学原理和计算方法，对于理解现代视觉系统具有重要意义。</p>
                     </div>
                 </section>
             </div>
         </div>
     </div>
 
-    <!-- 异步加载KaTeX以避免阻塞 -->
-    <script>
-        // 优化的KaTeX加载
-        (function() {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js';
-            script.async = true;
-            script.onload = function() {
-                // KaTeX加载完成后再加载theory.js
-                const theoryScript = document.createElement('script');
-                theoryScript.src = 'theory.js';
-                theoryScript.async = true;
-                document.head.appendChild(theoryScript);
-            };
-            script.onerror = function() {
-                console.error('Failed to load KaTeX');
-                // 即使KaTeX加载失败，也要加载theory.js
-                const theoryScript = document.createElement('script');
-                theoryScript.src = 'theory.js';
-                document.head.appendChild(theoryScript);
-            };
-            document.head.appendChild(script);
-        })();
-    </script>
+    <!-- 同步加载KaTeX确保可用性 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+    <script src="theory.js"></script>
 </body>
 </html>

@@ -1,19 +1,55 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 显示加载指示器
-    showLoadingIndicator();
-
-    // 初始化数学公式渲染（优化版本）
-    initOptimizedMathRendering();
+    // 检查KaTeX是否已加载
+    if (typeof katex !== 'undefined') {
+        initMathRendering();
+    } else {
+        // 等待KaTeX加载
+        waitForKaTeX();
+    }
 
     // 初始化可视化演示
     initHomographyDemo();
 
     // 初始化平滑滚动
     initSmoothScrolling();
-
-    // 隐藏加载指示器
-    hideLoadingIndicator();
 });
+
+function waitForKaTeX() {
+    showLoadingIndicator();
+
+    let attempts = 0;
+    const maxAttempts = 50; // 最多等待5秒
+
+    function checkKaTeX() {
+        attempts++;
+        if (typeof katex !== 'undefined') {
+            console.log('KaTeX loaded successfully');
+            initMathRendering();
+        } else if (attempts < maxAttempts) {
+            setTimeout(checkKaTeX, 100);
+        } else {
+            console.error('KaTeX failed to load after 5 seconds');
+            hideLoadingIndicator();
+            showFallbackMath();
+        }
+    }
+
+    checkKaTeX();
+}
+
+function showFallbackMath() {
+    // 如果KaTeX加载失败，显示纯文本版本
+    Object.entries(mathExpressions).forEach(([id, expression]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = expression;
+            element.style.fontFamily = 'monospace';
+            element.style.background = '#f5f5f5';
+            element.style.padding = '0.5rem';
+            element.style.borderRadius = '4px';
+        }
+    });
+}
 
 function showLoadingIndicator() {
     const indicator = document.createElement('div');
@@ -60,7 +96,9 @@ function hideLoadingIndicator() {
     }
 }
 
-function initOptimizedMathRendering() {
+function initMathRendering() {
+    console.log('Starting math rendering...');
+    showLoadingIndicator();
     // 渲染各种数学公式
     const mathExpressions = {
         // 第1章 - 引言
@@ -288,6 +326,21 @@ function initOptimizedMathRendering() {
         'condition-check': '\\text{cond}(\\mathbf{A}) > 10^{12}',
         'reprojection-error': `
             E = \\frac{1}{4}\\sum_{i=1}^4 \\|\\mathbf{q}_i - \\mathbf{H}\\mathbf{p}_i\\|^2
+        `,
+
+        // 新增的公式
+        'Ah-zero-intro': '\\mathbf{A}\\mathbf{h} = \\mathbf{0}',
+        'A-inverse': '\\mathbf{A}^{-1}',
+        'A-size-8x9': '\\mathbf{A} \\in \\mathbb{R}^{8 \\times 9}',
+        'Ah-zero-problem': '\\mathbf{A}\\mathbf{h} = \\mathbf{0}',
+        'A-singular': '\\det(\\mathbf{A}) = 0',
+
+        // 应用相关公式
+        'surround-view-transform': `
+            \\mathbf{H}_{\\text{ground}} = \\mathbf{K} \\mathbf{R} \\mathbf{K}_{\\text{camera}}^{-1}
+        `,
+        'ar-projection': `
+            \\mathbf{p}_{\\text{screen}} = \\mathbf{H}_{\\text{plane}} \\mathbf{p}_{\\text{world}}
         `
     };
     
@@ -351,11 +404,50 @@ function initOptimizedMathRendering() {
         renderBatch();
     }
 
-    // 启动智能渲染（优先渲染可见区域）
-    intelligentRenderMath();
+    // 简化渲染逻辑，确保公式能正常显示
+    simpleRenderMath();
+}
 
-    // 设置滚动监听，延迟渲染不可见区域
-    setupLazyMathRendering();
+function simpleRenderMath() {
+    const totalFormulas = Object.keys(mathExpressions).length;
+    let renderedCount = 0;
+
+    updateLoadingProgress(0, totalFormulas, '开始渲染数学公式...');
+
+    // 直接渲染所有公式
+    Object.entries(mathExpressions).forEach(([id, expression], index) => {
+        const element = document.getElementById(id);
+        if (element) {
+            try {
+                const isDisplay = element.classList.contains('katex-display');
+                const options = {
+                    displayMode: isDisplay,
+                    throwOnError: false,
+                    strict: false,
+                    trust: true
+                };
+
+                katex.render(expression, element, options);
+                renderedCount++;
+
+                // 更新进度
+                if (index % 5 === 0 || index === totalFormulas - 1) {
+                    updateLoadingProgress(renderedCount, totalFormulas, '渲染数学公式...');
+                }
+
+            } catch (error) {
+                console.warn(`Failed to render math for ${id}:`, error);
+                element.textContent = `[公式: ${expression.substring(0, 30)}...]`;
+                element.style.fontStyle = 'italic';
+                element.style.color = '#666';
+                renderedCount++;
+            }
+        }
+    });
+
+    // 渲染完成
+    updateLoadingProgress(totalFormulas, totalFormulas, '渲染完成！');
+    setTimeout(hideLoadingIndicator, 500);
 }
 
 function intelligentRenderMath() {
