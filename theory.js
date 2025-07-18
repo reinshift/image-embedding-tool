@@ -1,15 +1,66 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化数学公式渲染
-    initMathRendering();
-    
+    // 显示加载指示器
+    showLoadingIndicator();
+
+    // 初始化数学公式渲染（优化版本）
+    initOptimizedMathRendering();
+
     // 初始化可视化演示
     initHomographyDemo();
-    
+
     // 初始化平滑滚动
     initSmoothScrolling();
+
+    // 隐藏加载指示器
+    hideLoadingIndicator();
 });
 
-function initMathRendering() {
+function showLoadingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.id = 'math-loading';
+    indicator.innerHTML = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                    background: rgba(255,255,255,0.95); padding: 25px; border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 9999; text-align: center;
+                    backdrop-filter: blur(10px); min-width: 280px;">
+            <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3;
+                        border-top: 3px solid #24d37a; border-radius: 50%;
+                        animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+            <div id="loading-text" style="color: #333; font-weight: 500; margin-bottom: 10px;">正在加载数学公式...</div>
+            <div id="loading-progress" style="width: 100%; height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #24d37a, #1cb967);
+                                              border-radius: 2px; transition: width 0.3s ease;"></div>
+            </div>
+            <div id="loading-stats" style="font-size: 12px; color: #666; margin-top: 8px;">0 / 0 公式已渲染</div>
+        </div>
+        <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+    `;
+    document.body.appendChild(indicator);
+}
+
+function updateLoadingProgress(current, total, message) {
+    const progressBar = document.getElementById('progress-bar');
+    const loadingText = document.getElementById('loading-text');
+    const loadingStats = document.getElementById('loading-stats');
+
+    if (progressBar && loadingText && loadingStats) {
+        const percentage = total > 0 ? (current / total) * 100 : 0;
+        progressBar.style.width = percentage + '%';
+        loadingText.textContent = message || '正在渲染数学公式...';
+        loadingStats.textContent = `${current} / ${total} 公式已渲染`;
+    }
+}
+
+function hideLoadingIndicator() {
+    const indicator = document.getElementById('math-loading');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+function initOptimizedMathRendering() {
     // 渲染各种数学公式
     const mathExpressions = {
         // 第1章 - 引言
@@ -240,29 +291,284 @@ function initMathRendering() {
         `
     };
     
-    // 渲染所有数学公式
+    // 创建渲染队列和缓存
+    const renderQueue = [];
+    const renderCache = new Map();
+
+    // 收集所有需要渲染的元素
     Object.entries(mathExpressions).forEach(([id, expression]) => {
         const element = document.getElementById(id);
         if (element) {
-            try {
-                if (element.classList.contains('katex-display')) {
-                    katex.render(expression, element, {
-                        displayMode: true,
-                        throwOnError: false
-                    });
-                } else {
-                    katex.render(expression, element, {
-                        displayMode: false,
-                        throwOnError: false
-                    });
+            renderQueue.push({ id, expression, element });
+        }
+    });
+
+    // 批量渲染函数
+    function batchRenderMath() {
+        const BATCH_SIZE = 5; // 每批处理5个公式
+        let currentIndex = 0;
+
+        function renderBatch() {
+            const batch = renderQueue.slice(currentIndex, currentIndex + BATCH_SIZE);
+
+            batch.forEach(({ id, expression, element }) => {
+                // 检查缓存
+                if (renderCache.has(expression)) {
+                    element.innerHTML = renderCache.get(expression);
+                    return;
                 }
+
+                try {
+                    const isDisplay = element.classList.contains('katex-display');
+                    const options = {
+                        displayMode: isDisplay,
+                        throwOnError: false,
+                        strict: false, // 减少严格检查
+                        trust: true    // 信任输入，提高性能
+                    };
+
+                    katex.render(expression, element, options);
+
+                    // 缓存渲染结果
+                    renderCache.set(expression, element.innerHTML);
+
+                } catch (error) {
+                    console.warn(`Failed to render math for ${id}:`, error);
+                    element.textContent = expression;
+                }
+            });
+
+            currentIndex += BATCH_SIZE;
+
+            // 如果还有未渲染的公式，继续下一批
+            if (currentIndex < renderQueue.length) {
+                // 使用 requestAnimationFrame 避免阻塞UI
+                requestAnimationFrame(renderBatch);
+            }
+        }
+
+        // 开始渲染
+        renderBatch();
+    }
+
+    // 启动智能渲染（优先渲染可见区域）
+    intelligentRenderMath();
+
+    // 设置滚动监听，延迟渲染不可见区域
+    setupLazyMathRendering();
+}
+
+function intelligentRenderMath() {
+    const renderQueue = [];
+    const renderCache = new Map();
+
+    // 收集所有需要渲染的元素并按可见性排序
+    Object.entries(mathExpressions).forEach(([id, expression]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            const isVisible = isElementInViewport(element);
+            renderQueue.push({
+                id,
+                expression,
+                element,
+                isVisible,
+                priority: isVisible ? 1 : 2
+            });
+        }
+    });
+
+    // 按优先级排序（可见的先渲染）
+    renderQueue.sort((a, b) => a.priority - b.priority);
+
+    const totalFormulas = renderQueue.length;
+    let renderedCount = 0;
+    let currentIndex = 0;
+    const BATCH_SIZE = 3;
+
+    // 初始化进度
+    updateLoadingProgress(0, totalFormulas, '开始渲染数学公式...');
+
+    function renderBatch() {
+        const batch = renderQueue.slice(currentIndex, currentIndex + BATCH_SIZE);
+        const startTime = performance.now();
+
+        batch.forEach(({ id, expression, element }) => {
+            // 检查缓存
+            if (renderCache.has(expression)) {
+                element.innerHTML = renderCache.get(expression);
+                renderedCount++;
+                return;
+            }
+
+            try {
+                const isDisplay = element.classList.contains('katex-display');
+                const options = {
+                    displayMode: isDisplay,
+                    throwOnError: false,
+                    strict: false,
+                    trust: true,
+                    macros: {},
+                    colorIsTextColor: false
+                };
+
+                katex.render(expression, element, options);
+                renderCache.set(expression, element.innerHTML);
+                renderedCount++;
+
             } catch (error) {
                 console.warn(`Failed to render math for ${id}:`, error);
                 element.textContent = expression;
+                renderedCount++;
             }
+        });
+
+        // 更新进度
+        const isRenderingVisible = currentIndex < renderQueue.filter(item => item.isVisible).length;
+        const message = isRenderingVisible ? '渲染可见公式...' : '渲染剩余公式...';
+        updateLoadingProgress(renderedCount, totalFormulas, message);
+
+        currentIndex += BATCH_SIZE;
+
+        if (currentIndex < renderQueue.length) {
+            const renderTime = performance.now() - startTime;
+            // 动态调整延迟，如果渲染很快就减少延迟
+            const delay = isRenderingVisible ? Math.max(0, 16 - renderTime) : Math.max(20, 50 - renderTime);
+            setTimeout(() => requestAnimationFrame(renderBatch), delay);
+        } else {
+            // 渲染完成
+            setTimeout(() => {
+                updateLoadingProgress(totalFormulas, totalFormulas, '渲染完成！');
+                setTimeout(hideLoadingIndicator, 500);
+            }, 100);
+        }
+    }
+
+    renderBatch();
+}
+
+function isElementInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+    return (
+        rect.top >= -100 && // 提前100px开始渲染
+        rect.left >= -100 &&
+        rect.bottom <= windowHeight + 100 &&
+        rect.right <= windowWidth + 100
+    );
+}
+
+function setupLazyMathRendering() {
+    let ticking = false;
+
+    function checkVisibleMath() {
+        // 查找未渲染的数学元素
+        const unrenderedElements = document.querySelectorAll('.katex-display:empty, .inline-math:empty');
+
+        unrenderedElements.forEach(element => {
+            if (isElementInViewport(element)) {
+                const id = element.id;
+                const expression = mathExpressions[id];
+
+                if (expression) {
+                    try {
+                        const isDisplay = element.classList.contains('katex-display');
+                        katex.render(expression, element, {
+                            displayMode: isDisplay,
+                            throwOnError: false,
+                            strict: false,
+                            trust: true
+                        });
+                    } catch (error) {
+                        console.warn(`Failed to lazy render math for ${id}:`, error);
+                        element.textContent = expression;
+                    }
+                }
+            }
+        });
+
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!ticking) {
+            requestAnimationFrame(checkVisibleMath);
+            ticking = true;
+        }
+    }
+
+    // 节流的滚动监听
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+}
+
+// 性能监控
+function monitorPerformance() {
+    const startTime = performance.now();
+    let renderCount = 0;
+
+    // 监控渲染性能
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE &&
+                        (node.classList?.contains('katex') || node.querySelector?.('.katex'))) {
+                        renderCount++;
+                    }
+                });
+            }
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // 5秒后停止监控并报告性能
+    setTimeout(() => {
+        observer.disconnect();
+        const endTime = performance.now();
+        const totalTime = endTime - startTime;
+        console.log(`Math rendering performance: ${renderCount} formulas in ${totalTime.toFixed(2)}ms`);
+
+        // 如果性能很差，给出建议
+        if (totalTime > 5000) {
+            console.warn('Math rendering is slow. Consider reducing the number of formulas or using simpler expressions.');
+        }
+    }, 5000);
+}
+
+// 错误恢复机制
+function setupErrorRecovery() {
+    window.addEventListener('error', (event) => {
+        if (event.message.includes('katex') || event.filename.includes('katex')) {
+            console.warn('KaTeX error detected, attempting recovery...');
+
+            // 尝试重新渲染失败的公式
+            setTimeout(() => {
+                const emptyMathElements = document.querySelectorAll('.katex-display:empty, .inline-math:empty');
+                emptyMathElements.forEach(element => {
+                    const id = element.id;
+                    const expression = mathExpressions[id];
+                    if (expression) {
+                        element.textContent = `[数学公式: ${expression.substring(0, 50)}...]`;
+                        element.style.fontStyle = 'italic';
+                        element.style.color = '#666';
+                    }
+                });
+            }, 1000);
         }
     });
 }
+
+// 在页面加载完成后启动监控
+document.addEventListener('DOMContentLoaded', () => {
+    monitorPerformance();
+    setupErrorRecovery();
+});
 
 function initHomographyDemo() {
     const canvas = document.getElementById('homography-demo');
