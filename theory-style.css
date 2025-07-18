@@ -580,3 +580,491 @@ html {
     border-radius: 4px;
     font-weight: 500;
 }
+
+/* 新增样式 - 问题说明 */
+.problem-illustration {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.problem-step {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.problem-step h4 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+/* 几何解释 */
+.geometry-explanation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--math-bg);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.geo-item {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    box-shadow: var(--shadow-light);
+    text-align: center;
+    min-width: 200px;
+}
+
+.arrow {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.arrow-right {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* 原因说明 */
+.why-homography {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.reason-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-top: 3px solid var(--primary-color);
+}
+
+.reason-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+}
+
+/* 数学解释 */
+.math-explanation {
+    list-style: none;
+    padding: 0;
+}
+
+.math-explanation li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.math-explanation li:last-child {
+    border-bottom: none;
+}
+
+/* 坐标转换 */
+.coordinate-conversion {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.conversion-step {
+    margin: 0.75rem 0;
+    padding: 0.5rem 0;
+}
+
+/* 对应关系设置 */
+.correspondence-setup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.correspondence-item {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+}
+
+.correspondence-item h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+/* 方程推导 */
+.equation-derivation {
+    background: var(--math-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.derivation-step {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: white;
+    border-radius: 6px;
+    box-shadow: var(--shadow-light);
+}
+
+.derivation-step strong {
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* 稳定性考虑 */
+.stability-considerations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.consideration-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-left: 4px solid var(--primary-color);
+}
+
+.consideration-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+}
+
+/* 算法概览 */
+.algorithm-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.overview-item {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.overview-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+}
+
+/* 详细算法步骤 */
+.algorithm-steps-detailed {
+    margin: 2rem 0;
+}
+
+.step-detail {
+    display: flex;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+}
+
+.step-number-large {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content-detailed {
+    flex: 1;
+}
+
+.step-content-detailed h4 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+.step-content-detailed ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+/* 数学洞察 */
+.mathematical-insight {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.insight-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-top: 3px solid var(--primary-color);
+}
+
+.insight-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+}
+
+/* 完整工作流程 */
+.complete-workflow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.workflow-phase {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-left: 4px solid var(--primary-color);
+}
+
+.workflow-phase h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.workflow-phase ul {
+    list-style: none;
+    padding: 0;
+}
+
+.workflow-phase li {
+    padding: 0.3rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.workflow-phase li:before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+/* 实现细节 */
+.implementation-details {
+    margin: 2rem 0;
+}
+
+.detail-section {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.detail-section h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.detail-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.detail-content p {
+    margin: 0.5rem 0;
+}
+
+.detail-content strong {
+    color: var(--text-color);
+}
+
+/* 架构图 */
+.architecture-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--math-bg);
+    border-radius: 8px;
+}
+
+.arch-layer {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.arch-layer h4 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.arch-arrow {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* 错误处理 */
+.error-handling {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.error-case {
+    background: #fff5f5;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #e53e3e;
+}
+
+.error-case h4 {
+    margin-bottom: 0.75rem;
+    color: #e53e3e;
+}
+
+/* 详细应用 */
+.applications-detailed {
+    margin: 2rem 0;
+}
+
+.app-category {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+}
+
+.app-category h3 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.app-examples {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.app-example {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+}
+
+.app-example h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+/* 扩展项目 */
+.extensions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.extension-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    border-top: 3px solid var(--primary-color);
+}
+
+.extension-item h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+}
+
+/* 学习总结 */
+.learning-summary {
+    background: var(--math-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 2px solid var(--primary-color);
+}
+
+.summary-list {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+}
+
+.summary-list li {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+}
+
+.summary-list strong {
+    color: var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .correspondence-setup,
+    .geometry-explanation {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .step-detail {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .step-number-large {
+        align-self: center;
+    }
+
+    .architecture-diagram {
+        padding: 1rem;
+    }
+
+    .arch-layer {
+        max-width: 100%;
+    }
+}

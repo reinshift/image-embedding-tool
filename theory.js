@@ -51,6 +51,15 @@ function initMathRendering() {
             x_i h_{11} + y_i h_{12} + h_{13} - x'_i(x_i h_{31} + y_i h_{32} + h_{33}) &= 0 \\\\
             x_i h_{21} + y_i h_{22} + h_{23} - y'_i(x_i h_{31} + y_i h_{32} + h_{33}) &= 0
             \\end{align}
+        `,
+
+        'point-correspondence': `
+            \\begin{bmatrix}
+            x'_i \\\\ y'_i \\\\ w'_i
+            \\end{bmatrix} = H
+            \\begin{bmatrix}
+            x_i \\\\ y_i \\\\ 1
+            \\end{bmatrix}
         `
     };
     

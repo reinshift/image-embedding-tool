@@ -33,252 +33,550 @@
                 <div class="toc-section">
                     <h2 class="toc-title">目录</h2>
                     <ul class="toc-list">
-                        <li><a href="#homography-intro">1. 单应性矩阵基础</a></li>
-                        <li><a href="#matrix-theory">2. 矩阵理论基础</a></li>
-                        <li><a href="#pseudo-inverse">3. 矩阵广义逆</a></li>
-                        <li><a href="#dlt-method">4. DLT算法原理</a></li>
-                        <li><a href="#implementation">5. 项目实现原理</a></li>
-                        <li><a href="#applications">6. 应用场景</a></li>
+                        <li><a href="#problem-intro">1. 图像嵌入问题的提出</a></li>
+                        <li><a href="#homography-solution">2. 单应性变换：问题的数学解决方案</a></li>
+                        <li><a href="#mathematical-foundation">3. 数学基础：从点对应到矩阵求解</a></li>
+                        <li><a href="#dlt-algorithm">4. DLT算法：实际求解过程</a></li>
+                        <li><a href="#implementation-process">5. 完整的图像嵌入流程</a></li>
+                        <li><a href="#applications">6. 实际应用与扩展</a></li>
                     </ul>
                 </div>
 
-                <!-- 1. 单应性矩阵基础 -->
-                <section id="homography-intro" class="theory-section">
-                    <h2 class="section-title">1. 单应性矩阵基础</h2>
-                    
+                <!-- 1. 图像嵌入问题的提出 -->
+                <section id="problem-intro" class="theory-section">
+                    <h2 class="section-title">1. 图像嵌入问题的提出</h2>
+
                     <div class="content-block">
-                        <h3>1.1 什么是单应性变换</h3>
-                        <p>单应性变换（Homography）是计算机视觉中的一个重要概念，它描述了两个平面之间的投影变换关系。在图像处理中，单应性矩阵可以将一个平面上的点映射到另一个平面上的对应点。</p>
-                        
-                        <div class="math-block">
-                            <p>数学表达式：</p>
-                            <div class="katex-display" id="homography-eq1"></div>
+                        <h3>1.1 现实中的图像嵌入需求</h3>
+                        <p>想象这样一个场景：你有一张建筑设计图，想要将它"贴"到一面墙上，看看实际效果如何。或者你想把一张海报放到一个倾斜的广告牌上。这就是<strong>图像嵌入</strong>问题。</p>
+
+                        <div class="problem-illustration">
+                            <div class="problem-step">
+                                <h4>🎯 目标</h4>
+                                <p>将一幅图像（叠加图像）自然地"嵌入"到另一幅图像（背景图像）的指定区域中</p>
+                            </div>
+                            <div class="problem-step">
+                                <h4>🔧 挑战</h4>
+                                <p>目标区域通常不是矩形，而是由于透视效果形成的四边形，需要进行透视变换</p>
+                            </div>
+                            <div class="problem-step">
+                                <h4>💡 关键</h4>
+                                <p>找到一种数学方法，能够将矩形图像变换成任意四边形，且保持视觉上的自然效果</p>
+                            </div>
                         </div>
-                        
-                        <p>其中 <span class="inline-math" id="h-matrix"></span> 是 3×3 的单应性矩阵，<span class="inline-math" id="point-src"></span> 和 <span class="inline-math" id="point-dst"></span> 分别是源点和目标点的齐次坐标。</p>
                     </div>
 
                     <div class="content-block">
-                        <h3>1.2 单应性矩阵的性质</h3>
-                        <ul class="property-list">
-                            <li><strong>可逆性：</strong>单应性矩阵是可逆的，存在逆变换</li>
-                            <li><strong>齐次性：</strong>矩阵可以乘以任意非零常数而不改变变换</li>
-                            <li><strong>自由度：</strong>具有8个自由度（9个元素减去1个尺度因子）</li>
-                            <li><strong>保持直线性：</strong>直线在变换后仍然是直线</li>
-                        </ul>
+                        <h3>1.2 从几何角度理解问题</h3>
+                        <p>图像嵌入本质上是一个<strong>几何变换</strong>问题：</p>
+
+                        <div class="geometry-explanation">
+                            <div class="geo-item">
+                                <strong>源图像：</strong>矩形图像，四个角点坐标已知
+                            </div>
+                            <div class="arrow">↓ 变换</div>
+                            <div class="geo-item">
+                                <strong>目标区域：</strong>背景图像中的四边形区域，四个角点由用户指定
+                            </div>
+                        </div>
+
+                        <p>我们需要找到一个变换函数 <strong>f</strong>，使得源图像的每个像素点 <strong>(x, y)</strong> 都能准确映射到目标区域的对应位置 <strong>(x', y')</strong>。</p>
                     </div>
 
                     <div class="visual-demo">
-                        <h3>1.3 变换效果演示</h3>
+                        <h3>1.3 问题可视化</h3>
                         <div class="demo-container">
-                            <canvas id="homography-demo" width="400" height="300"></canvas>
+                            <canvas id="problem-demo" width="400" height="300"></canvas>
                             <div class="demo-controls">
-                                <button class="demo-btn" onclick="animateHomography()">播放动画</button>
-                                <button class="demo-btn" onclick="resetDemo()">重置</button>
+                                <button class="demo-btn" onclick="animateProblem()">演示变换过程</button>
+                                <button class="demo-btn" onclick="resetProblemDemo()">重置</button>
                             </div>
                         </div>
+                        <p class="demo-description">上图展示了从矩形图像到四边形区域的变换过程</p>
                     </div>
                 </section>
 
-                <!-- 2. 矩阵理论基础 -->
-                <section id="matrix-theory" class="theory-section">
-                    <h2 class="section-title">2. 矩阵理论基础</h2>
-                    
+                <!-- 2. 单应性变换：问题的数学解决方案 -->
+                <section id="homography-solution" class="theory-section">
+                    <h2 class="section-title">2. 单应性变换：问题的数学解决方案</h2>
+
                     <div class="content-block">
-                        <h3>2.1 线性方程组</h3>
-                        <p>单应性矩阵的计算本质上是求解线性方程组的问题。给定n对对应点，我们可以建立如下的线性方程组：</p>
-                        
+                        <h3>2.1 为什么选择单应性变换？</h3>
+                        <p>面对图像嵌入问题，我们需要一种能够将矩形变换为任意四边形的数学工具。<strong>单应性变换（Homography）</strong>正是这样的工具。</p>
+
+                        <div class="why-homography">
+                            <div class="reason-item">
+                                <h4>✅ 保持直线性</h4>
+                                <p>直线在变换后仍然是直线，这对于保持图像的几何结构至关重要</p>
+                            </div>
+                            <div class="reason-item">
+                                <h4>✅ 透视效果</h4>
+                                <p>能够模拟真实世界中的透视效果，使嵌入结果看起来自然</p>
+                            </div>
+                            <div class="reason-item">
+                                <h4>✅ 四点确定</h4>
+                                <p>只需要4对对应点就能完全确定变换，符合我们的应用场景</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>2.2 单应性变换的数学表达</h3>
+                        <p>单应性变换用一个3×3矩阵来描述平面到平面的映射关系：</p>
+
+                        <div class="math-block">
+                            <p>基本变换公式：</p>
+                            <div class="katex-display" id="homography-eq1"></div>
+                        </div>
+
+                        <p>其中：</p>
+                        <ul class="math-explanation">
+                            <li><span class="inline-math" id="h-matrix"></span> 是 3×3 的单应性矩阵（我们要求解的未知量）</li>
+                            <li><span class="inline-math" id="point-src"></span> 是源图像中的点（齐次坐标）</li>
+                            <li><span class="inline-math" id="point-dst"></span> 是目标区域中的对应点（齐次坐标）</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>2.3 从齐次坐标到实际坐标</h3>
+                        <p>在实际应用中，我们需要将齐次坐标转换回普通的图像坐标：</p>
+
+                        <div class="coordinate-conversion">
+                            <div class="conversion-step">
+                                <strong>步骤1：</strong>应用单应性矩阵得到齐次坐标 (x', y', w')
+                            </div>
+                            <div class="conversion-step">
+                                <strong>步骤2：</strong>归一化得到实际坐标 (x'/w', y'/w')
+                            </div>
+                        </div>
+
+                        <p>这个归一化过程正是产生透视效果的关键所在。</p>
+                    </div>
+                </section>
+
+                <!-- 3. 数学基础：从点对应到矩阵求解 -->
+                <section id="mathematical-foundation" class="theory-section">
+                    <h2 class="section-title">3. 数学基础：从点对应到矩阵求解</h2>
+
+                    <div class="content-block">
+                        <h3>3.1 建立点对应关系</h3>
+                        <p>要计算单应性矩阵，我们需要知道源图像和目标区域之间的对应关系。在我们的应用中：</p>
+
+                        <div class="correspondence-setup">
+                            <div class="correspondence-item">
+                                <h4>源图像的四个角点</h4>
+                                <p>矩形图像的四个角点坐标是固定的：<br>
+                                (0, 0), (width, 0), (width, height), (0, height)</p>
+                            </div>
+                            <div class="arrow-right">→</div>
+                            <div class="correspondence-item">
+                                <h4>目标区域的四个角点</h4>
+                                <p>用户在背景图像上点击选择的四个点：<br>
+                                (x₁, y₁), (x₂, y₂), (x₃, y₃), (x₄, y₄)</p>
+                            </div>
+                        </div>
+
+                        <p>有了这4对对应点，我们就可以建立线性方程组来求解单应性矩阵。</p>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>3.2 从几何关系到线性方程</h3>
+                        <p>对于每一对对应点，我们可以建立两个线性方程。以第i对点为例：</p>
+
+                        <div class="equation-derivation">
+                            <div class="derivation-step">
+                                <strong>原始关系：</strong>
+                                <div class="katex-display" id="point-correspondence"></div>
+                            </div>
+                            <div class="derivation-step">
+                                <strong>展开后：</strong>
+                                <p>x'ᵢ = (h₁₁xᵢ + h₁₂yᵢ + h₁₃) / (h₃₁xᵢ + h₃₂yᵢ + h₃₃)</p>
+                                <p>y'ᵢ = (h₂₁xᵢ + h₂₂yᵢ + h₂₃) / (h₃₁xᵢ + h₃₂yᵢ + h₃₃)</p>
+                            </div>
+                            <div class="derivation-step">
+                                <strong>线性化：</strong>
+                                <p>通过交叉相乘消除分母，得到关于h的线性方程</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>3.3 构建线性方程组</h3>
+                        <p>4对点产生8个线性方程，而单应性矩阵有9个元素。由于齐次性质，我们可以固定一个元素（通常是h₃₃=1），这样就有8个未知数和8个方程，形成了一个可解的线性方程组：</p>
+
                         <div class="math-block">
                             <div class="katex-display" id="linear-system"></div>
                         </div>
-                        
-                        <p>其中 <strong>A</strong> 是系数矩阵，<strong>h</strong> 是待求的单应性矩阵向量化形式。</p>
+
+                        <p>其中 <strong>A</strong> 是8×8的系数矩阵，<strong>h</strong> 是包含8个未知参数的向量，<strong>b</strong> 是常数向量。</p>
                     </div>
 
                     <div class="content-block">
-                        <h3>2.2 最小二乘解</h3>
-                        <p>当方程组超定时（点对数量大于4），我们需要求解最小二乘解：</p>
-                        
-                        <div class="math-block">
-                            <div class="katex-display" id="least-squares"></div>
+                        <h3>3.4 数值稳定性考虑</h3>
+                        <p>在实际计算中，我们需要考虑数值稳定性：</p>
+
+                        <div class="stability-considerations">
+                            <div class="consideration-item">
+                                <h4>🔢 坐标归一化</h4>
+                                <p>将图像坐标归一化到[-1,1]范围，避免数值过大导致的计算误差</p>
+                            </div>
+                            <div class="consideration-item">
+                                <h4>📊 条件数检查</h4>
+                                <p>检查系数矩阵的条件数，确保方程组是良态的</p>
+                            </div>
+                            <div class="consideration-item">
+                                <h4>⚖️ 最小二乘法</h4>
+                                <p>当有超过4对点时，使用最小二乘法求解超定方程组</p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 3. 矩阵广义逆 -->
-                <section id="pseudo-inverse" class="theory-section">
-                    <h2 class="section-title">3. 矩阵广义逆</h2>
-                    
+                <!-- 4. DLT算法：实际求解过程 -->
+                <section id="dlt-algorithm" class="theory-section">
+                    <h2 class="section-title">4. DLT算法：实际求解过程</h2>
+
                     <div class="content-block">
-                        <h3>3.1 广义逆的定义</h3>
-                        <p>对于矩阵 <strong>A</strong>，其广义逆（伪逆）<strong>A</strong><sup>+</sup> 满足以下性质：</p>
-                        
-                        <div class="math-block">
-                            <div class="katex-display" id="pseudo-inverse-def"></div>
+                        <h3>4.1 直接线性变换（DLT）算法概述</h3>
+                        <p>DLT（Direct Linear Transform）是计算单应性矩阵的经典算法。它的核心思想是将非线性的透视变换问题转化为线性方程组求解问题。</p>
+
+                        <div class="algorithm-overview">
+                            <div class="overview-item">
+                                <h4>🎯 目标</h4>
+                                <p>从4对对应点计算出3×3的单应性矩阵</p>
+                            </div>
+                            <div class="overview-item">
+                                <h4>🔧 方法</h4>
+                                <p>将每对点的几何约束转化为线性方程</p>
+                            </div>
+                            <div class="overview-item">
+                                <h4>📊 结果</h4>
+                                <p>求解线性方程组得到矩阵参数</p>
+                            </div>
                         </div>
-                        
-                        <p>广义逆在处理超定或欠定线性方程组时具有重要作用。</p>
                     </div>
 
                     <div class="content-block">
-                        <h3>3.2 SVD分解与广义逆</h3>
-                        <p>通过奇异值分解（SVD），我们可以计算矩阵的广义逆：</p>
-                        
-                        <div class="math-block">
-                            <div class="katex-display" id="svd-decomposition"></div>
+                        <h3>4.2 详细算法步骤</h3>
+                        <div class="algorithm-steps-detailed">
+                            <div class="step-detail">
+                                <div class="step-number-large">1</div>
+                                <div class="step-content-detailed">
+                                    <h4>构建约束方程</h4>
+                                    <p>对于每一对对应点 (xᵢ, yᵢ) ↔ (x'ᵢ, y'ᵢ)，建立两个约束方程：</p>
+                                    <div class="math-block">
+                                        <div class="katex-display" id="dlt-equations"></div>
+                                    </div>
+                                    <p>这些方程消除了齐次坐标中的尺度因子。</p>
+                                </div>
+                            </div>
+
+                            <div class="step-detail">
+                                <div class="step-number-large">2</div>
+                                <div class="step-content-detailed">
+                                    <h4>组装系数矩阵</h4>
+                                    <p>将8个约束方程组装成矩阵形式 <strong>Ah = 0</strong>，其中：</p>
+                                    <ul>
+                                        <li><strong>A</strong> 是8×9的系数矩阵</li>
+                                        <li><strong>h</strong> 是9×1的参数向量（单应性矩阵的向量化形式）</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="step-detail">
+                                <div class="step-number-large">3</div>
+                                <div class="step-content-detailed">
+                                    <h4>求解齐次方程组</h4>
+                                    <p>由于这是齐次方程组，我们寻找最小范数解：</p>
+                                    <ul>
+                                        <li>计算 <strong>A<sup>T</sup>A</strong> 的特征值分解</li>
+                                        <li>选择最小特征值对应的特征向量作为解</li>
+                                        <li>这确保了解的唯一性（除了尺度因子）</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="step-detail">
+                                <div class="step-number-large">4</div>
+                                <div class="step-content-detailed">
+                                    <h4>重构和归一化</h4>
+                                    <p>将9×1的解向量重新排列为3×3矩阵，并进行归一化：</p>
+                                    <ul>
+                                        <li>将向量 h 重新排列为矩阵 H</li>
+                                        <li>通常将 H₃₃ 归一化为1（如果非零）</li>
+                                        <li>得到最终的单应性矩阵</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <p>其中 <strong>Σ</strong><sup>+</sup> 是 <strong>Σ</strong> 的广义逆，通过将非零奇异值取倒数得到。</p>
                     </div>
 
                     <div class="content-block">
-                        <h3>3.3 在单应性计算中的应用</h3>
-                        <p>在单应性矩阵计算中，我们利用广义逆来求解齐次线性方程组 <strong>Ah</strong> = <strong>0</strong> 的最小范数解。这个解对应于 <strong>A</strong><sup>T</sup><strong>A</strong> 的最小特征值对应的特征向量。</p>
+                        <h3>4.3 算法的数学原理</h3>
+                        <p>DLT算法的核心在于将几何约束转化为代数约束：</p>
+
+                        <div class="mathematical-insight">
+                            <div class="insight-item">
+                                <h4>🔄 齐次坐标的优势</h4>
+                                <p>使用齐次坐标使得透视变换变成线性变换，简化了计算</p>
+                            </div>
+                            <div class="insight-item">
+                                <h4>📐 几何约束的代数化</h4>
+                                <p>点对应关系被转化为关于矩阵元素的线性方程</p>
+                            </div>
+                            <div class="insight-item">
+                                <h4>⚖️ 最小范数解的意义</h4>
+                                <p>在所有可能的解中选择"最小"的那个，确保数值稳定性</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- 4. DLT算法原理 -->
-                <section id="dlt-method" class="theory-section">
-                    <h2 class="section-title">4. DLT算法原理</h2>
-                    
-                    <div class="content-block">
-                        <h3>4.1 直接线性变换（DLT）</h3>
-                        <p>DLT是计算单应性矩阵的经典算法。对于每一对对应点 (x<sub>i</sub>, y<sub>i</sub>) ↔ (x'<sub>i</sub>, y'<sub>i</sub>)，我们可以建立两个线性方程：</p>
-                        
-                        <div class="math-block">
-                            <div class="katex-display" id="dlt-equations"></div>
-                        </div>
-                    </div>
+                <!-- 5. 完整的图像嵌入流程 -->
+                <section id="implementation-process" class="theory-section">
+                    <h2 class="section-title">5. 完整的图像嵌入流程</h2>
 
                     <div class="content-block">
-                        <h3>4.2 算法步骤</h3>
-                        <ol class="algorithm-steps">
-                            <li><strong>构建系数矩阵：</strong>根据对应点对构建线性方程组</li>
-                            <li><strong>求解齐次方程：</strong>找到 <strong>Ah</strong> = <strong>0</strong> 的最小范数解</li>
-                            <li><strong>重构矩阵：</strong>将解向量重新排列为3×3矩阵</li>
-                            <li><strong>归一化：</strong>通常将 h<sub>33</sub> 归一化为1</li>
-                        </ol>
-                    </div>
-                </section>
+                        <h3>5.1 从理论到实践：完整流程概览</h3>
+                        <p>现在我们将前面的理论知识串联起来，看看在我们的应用中是如何一步步实现图像嵌入的：</p>
 
-                <!-- 5. 项目实现原理 -->
-                <section id="implementation" class="theory-section">
-                    <h2 class="section-title">5. 项目实现原理</h2>
-                    
-                    <div class="content-block">
-                        <h3>5.1 JavaScript实现策略</h3>
-                        <p>本项目采用纯JavaScript实现单应性变换，主要包含以下模块：</p>
-                        
-                        <div class="implementation-diagram">
-                            <div class="module-box">
-                                <h4>矩阵运算模块</h4>
+                        <div class="complete-workflow">
+                            <div class="workflow-phase">
+                                <h4>📋 准备阶段</h4>
                                 <ul>
-                                    <li>矩阵乘法</li>
-                                    <li>矩阵转置</li>
-                                    <li>高斯消元法</li>
+                                    <li>用户上传背景图像和叠加图像</li>
+                                    <li>系统获取叠加图像的尺寸信息</li>
+                                    <li>确定源图像的四个角点坐标</li>
                                 </ul>
                             </div>
-                            <div class="arrow">→</div>
-                            <div class="module-box">
-                                <h4>单应性计算模块</h4>
+                            <div class="workflow-phase">
+                                <h4>🎯 交互阶段</h4>
                                 <ul>
-                                    <li>DLT算法实现</li>
-                                    <li>最小二乘求解</li>
-                                    <li>矩阵求逆</li>
+                                    <li>用户在背景图像上点击四个点</li>
+                                    <li>系统记录目标区域的四个角点坐标</li>
+                                    <li>建立源图像到目标区域的点对应关系</li>
                                 </ul>
                             </div>
-                            <div class="arrow">→</div>
-                            <div class="module-box">
-                                <h4>图像处理模块</h4>
+                            <div class="workflow-phase">
+                                <h4>🧮 计算阶段</h4>
                                 <ul>
-                                    <li>透视变换</li>
-                                    <li>双线性插值</li>
-                                    <li>图像合成</li>
+                                    <li>使用DLT算法计算单应性矩阵</li>
+                                    <li>验证矩阵的有效性和数值稳定性</li>
+                                    <li>准备进行图像变换</li>
+                                </ul>
+                            </div>
+                            <div class="workflow-phase">
+                                <h4>🖼️ 渲染阶段</h4>
+                                <ul>
+                                    <li>对叠加图像的每个像素应用透视变换</li>
+                                    <li>使用插值算法处理非整数坐标</li>
+                                    <li>将变换后的图像合成到背景图像上</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
 
                     <div class="content-block">
-                        <h3>5.2 核心算法流程</h3>
-                        <div class="algorithm-flow">
-                            <div class="flow-step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <h4>输入处理</h4>
-                                    <p>获取用户选择的4个对应点坐标</p>
-                                </div>
-                            </div>
-                            <div class="flow-arrow">↓</div>
-                            <div class="flow-step">
-                                <div class="step-number">2</div>
-                                <div class="step-content">
-                                    <h4>构建线性方程组</h4>
-                                    <p>根据DLT算法构建8×9的系数矩阵</p>
-                                </div>
-                            </div>
-                            <div class="flow-arrow">↓</div>
-                            <div class="flow-step">
-                                <div class="step-number">3</div>
-                                <div class="step-content">
-                                    <h4>求解单应性矩阵</h4>
-                                    <p>使用简化的最小二乘方法求解</p>
-                                </div>
-                            </div>
-                            <div class="flow-arrow">↓</div>
-                            <div class="flow-step">
-                                <div class="step-number">4</div>
-                                <div class="step-content">
-                                    <h4>图像变换</h4>
-                                    <p>应用透视变换并进行图像合成</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <h3>5.2 关键实现细节</h3>
 
-                    <div class="content-block">
-                        <h3>5.3 关键技术细节</h3>
-                        <div class="tech-details">
-                            <div class="detail-item">
-                                <h4>🔢 数值稳定性</h4>
-                                <p>采用归一化技术和条件数检查确保计算稳定性</p>
+                        <div class="implementation-details">
+                            <div class="detail-section">
+                                <h4>🔢 坐标系统处理</h4>
+                                <div class="detail-content">
+                                    <p><strong>问题：</strong>图像坐标系（左上角为原点）与数学坐标系的差异</p>
+                                    <p><strong>解决：</strong>在计算前后进行坐标系转换，确保变换的正确性</p>
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <h4>🎯 插值算法</h4>
-                                <p>使用双线性插值保证变换后图像的平滑性</p>
+
+                            <div class="detail-section">
+                                <h4>🎨 像素插值策略</h4>
+                                <div class="detail-content">
+                                    <p><strong>问题：</strong>变换后的坐标通常不是整数，需要确定像素值</p>
+                                    <p><strong>解决：</strong>使用双线性插值，在四个最近邻像素间进行加权平均</p>
+                                </div>
                             </div>
-                            <div class="detail-item">
+
+                            <div class="detail-section">
+                                <h4>🖼️ 图像合成技术</h4>
+                                <div class="detail-content">
+                                    <p><strong>问题：</strong>如何自然地将变换后的图像融合到背景中</p>
+                                    <p><strong>解决：</strong>支持多种混合模式，包括覆盖、透明度混合等</p>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
                                 <h4>⚡ 性能优化</h4>
-                                <p>采用边界框裁剪和并行处理提高计算效率</p>
+                                <div class="detail-content">
+                                    <p><strong>问题：</strong>大图像的实时处理可能很慢</p>
+                                    <p><strong>解决：</strong>边界框裁剪、分块处理、Web Workers并行计算</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>5.3 JavaScript实现架构</h3>
+                        <p>本项目采用模块化的JavaScript架构：</p>
+
+                        <div class="architecture-diagram">
+                            <div class="arch-layer">
+                                <h4>用户界面层</h4>
+                                <p>处理用户交互、文件上传、点击选择等</p>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-layer">
+                                <h4>几何计算层</h4>
+                                <p>DLT算法、矩阵运算、坐标变换</p>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-layer">
+                                <h4>图像处理层</h4>
+                                <p>像素变换、插值算法、图像合成</p>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-layer">
+                                <h4>渲染输出层</h4>
+                                <p>Canvas绘制、结果展示、文件下载</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>5.4 错误处理和边界情况</h3>
+                        <div class="error-handling">
+                            <div class="error-case">
+                                <h4>⚠️ 退化情况检测</h4>
+                                <p>检测四个点是否共线或形成退化四边形，这会导致矩阵奇异</p>
+                            </div>
+                            <div class="error-case">
+                                <h4>🔍 数值精度问题</h4>
+                                <p>监控条件数，当矩阵接近奇异时给出警告</p>
+                            </div>
+                            <div class="error-case">
+                                <h4>📐 几何合理性检查</h4>
+                                <p>验证变换结果是否在合理范围内，避免极端变形</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 6. 应用场景 -->
+                <!-- 6. 实际应用与扩展 -->
                 <section id="applications" class="theory-section">
-                    <h2 class="section-title">6. 应用场景</h2>
-                    
-                    <div class="applications-grid">
-                        <div class="app-card">
-                            <div class="app-icon">🏗️</div>
-                            <h3>建筑可视化</h3>
-                            <p>将建筑设计图嵌入到实际场景照片中，实现逼真的效果预览</p>
+                    <h2 class="section-title">6. 实际应用与扩展</h2>
+
+                    <div class="content-block">
+                        <h3>6.1 单应性变换的广泛应用</h3>
+                        <p>通过前面的学习，我们了解了单应性变换的原理和实现。这项技术在现实世界中有着广泛的应用：</p>
+                    </div>
+
+                    <div class="applications-detailed">
+                        <div class="app-category">
+                            <h3>🏗️ 建筑与设计领域</h3>
+                            <div class="app-examples">
+                                <div class="app-example">
+                                    <h4>建筑效果预览</h4>
+                                    <p>将建筑设计图嵌入到实际场地照片中，让客户直观看到建成后的效果。这正是我们工具的典型应用场景。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>室内设计可视化</h4>
+                                    <p>将家具、装饰品的图片嵌入到房间照片中，帮助客户预览装修效果。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>广告牌设计</h4>
+                                    <p>将广告内容嵌入到实际的广告牌位置，评估视觉效果和可见性。</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="app-card">
-                            <div class="app-icon">📱</div>
-                            <h3>增强现实</h3>
-                            <p>在AR应用中实现虚拟物体与真实场景的精确对齐</p>
+
+                        <div class="app-category">
+                            <h3>📱 计算机视觉与AR</h3>
+                            <div class="app-examples">
+                                <div class="app-example">
+                                    <h4>增强现实应用</h4>
+                                    <p>在AR应用中，单应性变换用于将虚拟物体准确地叠加到真实场景的平面上。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>图像配准</h4>
+                                    <p>将不同时间、不同角度拍摄的图像进行对齐，用于变化检测和分析。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>全景图拼接</h4>
+                                    <p>将多张重叠的照片拼接成全景图，单应性变换用于处理图像间的几何关系。</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="app-card">
-                            <div class="app-icon">🎬</div>
-                            <h3>影视制作</h3>
-                            <p>在电影后期制作中实现特效与实拍画面的无缝融合</p>
+
+                        <div class="app-category">
+                            <h3>🎬 媒体与娱乐</h3>
+                            <div class="app-examples">
+                                <div class="app-example">
+                                    <h4>影视后期制作</h4>
+                                    <p>将绿幕拍摄的演员嵌入到虚拟背景中，或者在场景中添加虚拟的屏幕内容。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>体育赛事转播</h4>
+                                    <p>在足球场、篮球场上叠加虚拟的广告牌或统计信息。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>游戏开发</h4>
+                                    <p>在游戏中实现真实感的纹理映射和环境反射效果。</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="app-card">
-                            <div class="app-icon">📊</div>
-                            <h3>文档矫正</h3>
-                            <p>自动矫正拍摄的文档图像，消除透视畸变</p>
+
+                        <div class="app-category">
+                            <h3>📊 文档处理与机器视觉</h3>
+                            <div class="app-examples">
+                                <div class="app-example">
+                                    <h4>文档扫描矫正</h4>
+                                    <p>自动矫正手机拍摄的文档照片，消除透视畸变，提高OCR识别准确率。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>工业检测</h4>
+                                    <p>在工业生产线上，将标准模板与实际产品进行对比，检测缺陷。</p>
+                                </div>
+                                <div class="app-example">
+                                    <h4>医学影像</h4>
+                                    <p>将不同时期的医学影像进行配准，用于病情跟踪和治疗效果评估。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>6.2 技术扩展与改进方向</h3>
+                        <div class="extensions">
+                            <div class="extension-item">
+                                <h4>🔄 鲁棒性改进</h4>
+                                <p>使用RANSAC算法处理噪声点，提高在复杂环境下的稳定性</p>
+                            </div>
+                            <div class="extension-item">
+                                <h4>🎯 精度优化</h4>
+                                <p>结合非线性优化方法，进一步提高变换的精度</p>
+                            </div>
+                            <div class="extension-item">
+                                <h4>🚀 实时处理</h4>
+                                <p>利用GPU加速和并行计算，实现实时的图像嵌入效果</p>
+                            </div>
+                            <div class="extension-item">
+                                <h4>🤖 智能化</h4>
+                                <p>结合机器学习，自动检测和选择最佳的嵌入区域</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-block">
+                        <h3>6.3 学习总结</h3>
+                        <div class="learning-summary">
+                            <p>通过本教程，我们完整地了解了图像嵌入的全过程：</p>
+                            <ol class="summary-list">
+                                <li><strong>问题理解：</strong>从实际需求出发，理解图像嵌入的本质</li>
+                                <li><strong>数学建模：</strong>将几何问题转化为数学问题</li>
+                                <li><strong>算法设计：</strong>使用DLT算法求解单应性矩阵</li>
+                                <li><strong>工程实现：</strong>处理实际编程中的各种细节问题</li>
+                                <li><strong>应用拓展：</strong>了解技术在各个领域的广泛应用</li>
+                            </ol>
+                            <p>这个过程展示了从理论到实践的完整路径，体现了数学、算法和工程实现的紧密结合。</p>
                         </div>
                     </div>
                 </section>
