@@ -1,84 +1,99 @@
 // 数学表达式定义
 const mathExpressions = {
-    // 第1章 - 背景介绍
-    'source-size': 'W \\times H',
-    'target-vertices': '\\{P_1, P_2, P_3, P_4\\}',
-    'source-corners': `
-        \\begin{align}
-        \\text{左上角：} &\\quad (0, 0) \\\\
-        \\text{右上角：} &\\quad (W, 0) \\\\
-        \\text{右下角：} &\\quad (W, H) \\\\
-        \\text{左下角：} &\\quad (0, H)
-        \\end{align}
+    // 第2章 - 从线性变换到单应矩阵
+    'rotation-matrix': `
+        \\begin{bmatrix}
+        \\cos\\theta & -\\sin\\theta \\\\
+        \\sin\\theta & \\cos\\theta
+        \\end{bmatrix}
     `,
-    'mapping-requirement': `
-        \\begin{cases}
-        (0, 0) &\\rightarrow P_1 = (x_1, y_1) \\\\
-        (W, 0) &\\rightarrow P_2 = (x_2, y_2) \\\\
-        (W, H) &\\rightarrow P_3 = (x_3, y_3) \\\\
-        (0, H) &\\rightarrow P_4 = (x_4, y_4)
-        \\end{cases}
-    `,
-
-    // 第2章 - 单应性变换
-    'homography-definition': `
-        \\begin{bmatrix} x' \\\\ y' \\\\ w' \\end{bmatrix} = 
-        \\mathbf{H} \\begin{bmatrix} x \\\\ y \\\\ 1 \\end{bmatrix}
-    `,
-    'H-matrix': '\\mathbf{H}',
-    'coordinate-conversion': `
-        \\begin{cases}
-        x_{\\text{new}} = \\frac{x'}{w'} \\\\
-        y_{\\text{new}} = \\frac{y'}{w'}
-        \\end{cases}
-    `,
-
-    // 第3章 - 单应矩阵结构
-    'H-general': '\\mathbf{H}',
-    'matrix-structure': `
+    'homography-matrix': `
         \\mathbf{H} = \\begin{bmatrix}
         h_{11} & h_{12} & h_{13} \\\\
         h_{21} & h_{22} & h_{23} \\\\
         h_{31} & h_{32} & h_{33}
         \\end{bmatrix}
     `,
-    'point-pair': '(\\mathbf{p}_i, \\mathbf{q}_i)',
-    'constraint-equation': '\\mathbf{q}_i \\sim \\mathbf{H} \\mathbf{p}_i',
-    'cross-product-zero': '\\mathbf{q}_i \\times (\\mathbf{H} \\mathbf{p}_i) = \\mathbf{0}',
-
-    // 第4章 - 求解算法
-    'matrix-vectorization': '\\mathbf{h} = [h_{11}, h_{12}, h_{13}, h_{21}, h_{22}, h_{23}, h_{31}, h_{32}, h_{33}]^T',
-    'linear-system': '\\mathbf{A} \\mathbf{h} = \\mathbf{0}',
-    'A-matrix': '\\mathbf{A}',
-    'least-squares': '\\min_{\\mathbf{h}} \\|\\mathbf{A} \\mathbf{h}\\|^2 \\quad \\text{subject to} \\quad \\|\\mathbf{h}\\| = 1',
-
-    // 第5章 - 广义逆与SVD
-    'matrix-A': '\\mathbf{A}',
-    'pseudoinverse': '\\mathbf{A}^+',
-    'pseudoinverse-definition': '\\mathbf{A}^+ = (\\mathbf{A}^T \\mathbf{A})^{-1} \\mathbf{A}^T \\quad \\text{(当 } \\mathbf{A}^T \\mathbf{A} \\text{ 可逆时)}',
-    'matrix-A-svd': '\\mathbf{A}',
-    'svd-decomposition': '\\mathbf{A} = \\mathbf{U} \\mathbf{\\Sigma} \\mathbf{V}^T',
-    'U-matrix': '\\mathbf{U}',
-    'V-matrix': '\\mathbf{V}',
-    'sigma-matrix': '\\mathbf{\\Sigma}',
-    'A-svd': '\\mathbf{A}',
-    'svd-solution': '\\mathbf{h} = \\mathbf{v}_{\\text{min}} \\quad \\text{(对应最小奇异值的右奇异向量)}',
-
-    // 第6章 - 项目Pipeline
-    'project-correspondence': `
-        \\begin{align}
-        \\text{源图像角点} &\\quad \\rightarrow \\quad \\text{目标四边形顶点} \\\\
-        (0, 0) &\\quad \\rightarrow \\quad (x_1, y_1) \\\\
-        (W, 0) &\\quad \\rightarrow \\quad (x_2, y_2) \\\\
-        (W, H) &\\quad \\rightarrow \\quad (x_3, y_3) \\\\
-        (0, H) &\\quad \\rightarrow \\quad (x_4, y_4)
-        \\end{align}
+    'homography-transform': `
+        \\begin{bmatrix} X' \\\\ Y' \\\\ Z' \\end{bmatrix} =
+        \\mathbf{H} \\begin{bmatrix} x \\\\ y \\\\ 1 \\end{bmatrix}
     `,
-    'source-pixel': '(x, y)',
-    'pixel-transform': `
+
+    // 第3章 - 图像嵌入问题的数学建模
+    'homography-equation': `
+        \\begin{bmatrix} x_i' \\\\ y_i' \\\\ 1 \\end{bmatrix} = \\lambda_i \\mathbf{H} \\begin{bmatrix} x_i \\\\ y_i \\\\ 1 \\end{bmatrix}
+    `,
+    'expanded-equations': `
         \\begin{cases}
-        x' = \\frac{h_{11}x + h_{12}y + h_{13}}{h_{31}x + h_{32}y + h_{33}} \\\\
-        y' = \\frac{h_{21}x + h_{22}y + h_{23}}{h_{31}x + h_{32}y + h_{33}}
+        \\lambda_i x_i' = h_{11}x_i + h_{12}y_i + h_{13} \\\\
+        \\lambda_i y_i' = h_{21}x_i + h_{22}y_i + h_{23} \\\\
+        \\lambda_i = h_{31}x_i + h_{32}y_i + h_{33}
+        \\end{cases}
+    `,
+    'constraint-equations': `
+        \\begin{cases}
+        (h_{31}x_i + h_{32}y_i + h_{33}) \\cdot x_i' = h_{11}x_i + h_{12}y_i + h_{13} \\\\
+        (h_{31}x_i + h_{32}y_i + h_{33}) \\cdot y_i' = h_{21}x_i + h_{22}y_i + h_{23}
+        \\end{cases}
+    `,
+
+    // 第4章 - 求解线性方程组
+    'constraint-rearrange': `
+        \\begin{cases}
+        h_{11}x_i + h_{12}y_i + h_{13} - x_i'(h_{31}x_i + h_{32}y_i + h_{33}) = 0 \\\\
+        h_{21}x_i + h_{22}y_i + h_{23} - y_i'(h_{31}x_i + h_{32}y_i + h_{33}) = 0
+        \\end{cases}
+    `,
+    'linear-form': `
+        \\begin{cases}
+        h_{11}x_i + h_{12}y_i + h_{13} - h_{31}x_i'x_i - h_{32}x_i'y_i - h_{33}x_i' = 0 \\\\
+        h_{21}x_i + h_{22}y_i + h_{23} - h_{31}y_i'x_i - h_{32}y_i'y_i - h_{33}y_i' = 0
+        \\end{cases}
+    `,
+    'h-vector-form': `
+        \\mathbf{h} = [h_{11}, h_{12}, h_{13}, h_{21}, h_{22}, h_{23}, h_{31}, h_{32}, h_{33}]^T
+    `,
+    'coefficient-matrix-row': `
+        \\begin{bmatrix}
+        x_i & y_i & 1 & 0 & 0 & 0 & -x_i'x_i & -x_i'y_i & -x_i' \\\\
+        0 & 0 & 0 & x_i & y_i & 1 & -y_i'x_i & -y_i'y_i & -y_i'
+        \\end{bmatrix}
+    `,
+    // 第4章新增的公式
+    'normalization-condition': `
+        h_{33} = 1
+    `,
+    'standard-linear-system': `
+        \\mathbf{A} = \\begin{bmatrix}
+        x_1 & y_1 & 1 & 0 & 0 & 0 & -x_1'x_1 & -x_1'y_1 \\\\
+        0 & 0 & 0 & x_1 & y_1 & 1 & -y_1'x_1 & -y_1'y_1 \\\\
+        x_2 & y_2 & 1 & 0 & 0 & 0 & -x_2'x_2 & -x_2'y_2 \\\\
+        0 & 0 & 0 & x_2 & y_2 & 1 & -y_2'x_2 & -y_2'y_2 \\\\
+        x_3 & y_3 & 1 & 0 & 0 & 0 & -x_3'x_3 & -x_3'y_3 \\\\
+        0 & 0 & 0 & x_3 & y_3 & 1 & -y_3'x_3 & -y_3'y_3 \\\\
+        x_4 & y_4 & 1 & 0 & 0 & 0 & -x_4'x_4 & -x_4'y_4 \\\\
+        0 & 0 & 0 & x_4 & y_4 & 1 & -y_4'x_4 & -y_4'y_4
+        \\end{bmatrix}, \\quad
+        \\mathbf{b} = \\begin{bmatrix}
+        x_1' \\\\ y_1' \\\\ x_2' \\\\ y_2' \\\\ x_3' \\\\ y_3' \\\\ x_4' \\\\ y_4'
+        \\end{bmatrix}
+    `,
+
+    // 第5章 - 广义逆与SVD分解
+    'svd-decomposition': `
+        \\mathbf{A} = \\mathbf{U} \\mathbf{\\Sigma} \\mathbf{V}^T
+    `,
+    'pseudoinverse-svd': `
+        \\mathbf{A}^+ = \\mathbf{V} \\mathbf{\\Sigma}^+ \\mathbf{U}^T
+    `,
+
+    // 第6章 - 图像嵌入的完整Pipeline
+    'concrete-coordinates': `
+        \\begin{cases}
+        (x_1, y_1) = (0, 0) & \\text{左上角} \\\\
+        (x_2, y_2) = (w, 0) & \\text{右上角} \\\\
+        (x_3, y_3) = (w, h) & \\text{右下角} \\\\
+        (x_4, y_4) = (0, h) & \\text{左下角}
         \\end{cases}
     `
 };
@@ -105,6 +120,7 @@ function renderMath() {
     console.log('开始渲染数学公式...');
     showLoading();
 
+    // 渲染有ID的display数学公式
     Object.entries(mathExpressions).forEach(([id, expression]) => {
         const element = document.getElementById(id);
         if (!element) {
@@ -131,7 +147,28 @@ function renderMath() {
         }
     });
 
-    console.log(`渲染完成: ${renderCount}/${totalCount}`);
+    // 渲染所有inline-math元素
+    const inlineMathElements = document.querySelectorAll('.inline-math');
+    inlineMathElements.forEach((element, index) => {
+        try {
+            const mathText = element.textContent.trim();
+            if (mathText) {
+                katex.render(mathText, element, {
+                    displayMode: false,
+                    throwOnError: false,
+                    strict: false,
+                    trust: true
+                });
+                console.log(`Successfully rendered inline math ${index + 1}: ${mathText}`);
+            }
+        } catch (error) {
+            console.error(`Failed to render inline math ${index + 1}:`, error);
+            element.style.color = '#dc3545';
+            element.style.fontStyle = 'italic';
+        }
+    });
+
+    console.log(`渲染完成: ${renderCount}/${totalCount} display公式 + ${inlineMathElements.length} inline公式`);
     hideLoading();
 }
 

@@ -200,7 +200,7 @@
         <nav class="theory-nav">
             <div class="nav-content">
                 <div class="nav-brand">
-                    <span class="nav-title">📐 图像嵌入的数学原理</span>
+                    <span class="nav-title">📐 单应变换</span>
                 </div>
                 <button class="back-btn" onclick="goBackToApp()">
                     ← 返回应用
@@ -213,255 +213,314 @@
             <div class="container">
                 <!-- 1. 图像嵌入背景介绍 -->
                 <section class="theory-section">
-                    <h2 class="section-title">1. 图像嵌入的背景与应用</h2>
+                    <h2 class="section-title">1. 背景</h2>
 
-                    <h3>1.1 什么是图像嵌入？</h3>
-                    <p>图像嵌入是指将一张图像（源图像）变形后放置到另一张图像（目标图像）的指定区域内的技术。这种技术在现代计算机视觉和图像处理中有着广泛的应用。</p>
+                    <h3>1.1 图像嵌入</h3>
+                    <p>你可能使用过全能扫描王、白描等软件，它们能够帮你把拍歪了的文件、身份证照片进行矫正；你可能使用过现代的汽车倒车影像，就好像有一个在天上的摄像头往下拍一样...你是否想过，它们是如何实现的呢？</p>
+
+                    <p>其实这些看似神奇的功能，我们在高代课上学习过——<strong>线性变换</strong>。线性变换分成好几种，有旋转、缩放等，这些都是基础的线性变换，能描述图形在平面内的许多运动。而上面的例子里，是视角发生了改变，实际上是在处理一个平面（比如纸张、地面）在不同视角下的投影图像之间的关系。因此我们需要一种能够精确描述一个平面到另一个平面的透视映射（Perspective Mapping）的工具，而这就是本文要介绍的"<strong>单应变换</strong>"。</p>
 
                     <div class="highlight-box">
                         <h4>🎯 核心问题</h4>
-                        <p>如何将一个矩形的源图像精确地嵌入到目标图像中的任意四边形区域？</p>
+                        <p>如何捕捉因视角变化带来的投影变形（比如矩形变梯形），并可以逆向恢复出物体"本来"的形状或视角？</p>
                     </div>
 
-                    <h3>1.2 数学问题描述</h3>
-                    <p>假设我们有：</p>
+                    <p>你正在浏览的这个图像嵌入工具，就是本文要讲的关于单应变换的一个案例。图像嵌入不是简单的图片的叠加：比如说你是一个商家，正在P图想把你产品的广告打到某个建筑物照片上，但照片存在透视（近大远小），直接把广告图贴上去，得到的照片一眼看出来是P的；但如果使用一点变换，让这个广告图的透视关系符合这张建筑照片的透视关系，看上去就会自然很多，正如你在本工具尝试的那样。这里也用到了单应变换，下面我们以这个工具为例，从单应变换开始介绍实现的过程。</p>
+
+                    <h3>1.2 单应变换的定义</h3>
+                    <p>单应变换（Homography），也叫透视变换、射影变换，是一种可逆映射，是关于齐次三维坐标的一种线性变换。它能够描述一个平面在不同视角下的投影关系。</p>
+
+                    <div class="highlight-box">
+                        <h4>🔍 直观理解</h4>
+                        <p>想象你拿着一张矩形的纸，从不同角度看它：正面看是矩形，侧面看可能是梯形，斜着看可能是任意四边形。单应变换就是描述这些不同视角之间关系的数学工具。</p>
+                    </div>
+                </section>
+
+                <!-- 2. 从线性变换到单应矩阵 -->
+                <section class="theory-section">
+                    <h2 class="section-title">2. 从线性变换到单应矩阵</h2>
+
+                    <h3>2.1 高代中的线性变换</h3>
+                    <p>还记得高代课上学过的线性变换吗？旋转、缩放、剪切等<strong>变换</strong>都可以用<strong>矩阵</strong>来表示。比如一个2D的旋转变换：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="rotation-matrix"></div>
+                    </div>
+
+                    <p>这些基础的线性变换有一个共同特点：它们保持直线为直线，保持平行线平行。但是，当我们需要处理透视效果时，这些变换就不够用了。</p>
+
+                    <h3>2.2 三维齐次坐标</h3>
+                    <p>为了处理透视变换，我们需要引入齐次坐标。将2D点 <span class="inline-math">(x, y)</span> 表示为3D齐次坐标 <span class="inline-math">(x, y, 1)</span>。这样做的好处是，透视变换也可以用矩阵乘法来表示了。</p>
+
+                    <h3>2.3 单应矩阵的定义</h3>
+                    <p>单应变换在齐次坐标系下可以表示为一个3×3矩阵：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="homography-matrix"></div>
+                    </div>
+
+                    <p>其中H就是我们要求的单应矩阵。变换过程是：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="homography-transform"></div>
+                    </div>
+
+                    <p>最后再转换回普通坐标：<span class="inline-math">x' = X'/Z', y' = Y'/Z'</span></p>
+                </section>
+
+                <!-- 3. 图像嵌入问题的数学建模 -->
+                <section class="theory-section">
+                    <h2 class="section-title">3. 图像嵌入问题的数学建模</h2>
+
+                    <h3>3.1 问题的通用描述</h3>
+                    <p>现在我们把图像嵌入问题进行数学建模。不失一般性，我们用以下符号：</p>
                     <ul>
-                        <li>源图像：尺寸为 <span class="inline-math" id="source-size"></span> 的矩形图像</li>
-                        <li>目标区域：由四个顶点 <span class="inline-math" id="target-vertices"></span> 定义的四边形</li>
+                        <li><strong>源图像四个角点</strong>：<span class="inline-math">(x_1, y_1), (x_2, y_2), (x_3, y_3), (x_4, y_4)</span></li>
+                        <li><strong>目标区域四个点</strong>：<span class="inline-math">(x_1', y_1'), (x_2', y_2'), (x_3', y_3'), (x_4', y_4')</span></li>
                     </ul>
 
-                    <p>源图像的四个角点坐标为：</p>
+                    <p>我们的目标是找到一个单应矩阵H，使得源图像的每个角点都能正确映射到目标区域的对应点。</p>
+
+                    <h3>3.2 单应变换的齐次坐标表示</h3>
+                    <p>根据2.3节的单应矩阵定义，对于每一对对应点 <span class="inline-math">(x_i, y_i)</span> 和 <span class="inline-math">(x_i', y_i')</span>，我们有：</p>
                     <div class="math-block">
-                        <div class="katex-display" id="source-corners"></div>
+                        <div class="katex-display" id="homography-equation"></div>
                     </div>
 
-                    <p>我们需要找到一个数学变换，将这些角点精确映射到目标四边形的顶点：</p>
+                    <p>这里的 <span class="inline-math">\lambda_i</span> 是齐次坐标的缩放因子。</p>
+
+                    <h3>3.3 等式关系的建立</h3>
+                    <p>将上述齐次坐标方程展开，我们得到：</p>
                     <div class="math-block">
-                        <div class="katex-display" id="mapping-requirement"></div>
+                        <div class="katex-display" id="expanded-equations"></div>
                     </div>
+
+                    <p>消除缩放因子 <span class="inline-math">\lambda_i</span>，我们可以得到两个重要的等式：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="constraint-equations"></div>
+                    </div>
+
+                    <p>这样，每一对对应点就给我们提供了两个线性约束条件。</p>
                 </section>
 
-                <!-- 2. 单应性变换介绍 -->
+                <!-- 4. 求解线性方程组 -->
                 <section class="theory-section">
-                    <h2 class="section-title">2. 单应性变换：解决问题的数学工具</h2>
+                    <h2 class="section-title">4. 求解线性方程组</h2>
 
-                    <h3>2.1 为什么需要单应性变换？</h3>
-                    <p>要将矩形变换为任意四边形，我们需要一种能够处理透视变形的数学变换。单应性变换（Homography）正是这样的工具。</p>
+                    <h3>4.1 从约束条件到线性方程组</h3>
+                    <p>根据第3节得到的约束条件，我们需要将其重新整理为标准的线性方程组形式。从约束方程：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="constraint-rearrange"></div>
+                    </div>
+
+                    <p>移项整理后，我们得到：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="linear-form"></div>
+                    </div>
+
+                    <h3>4.2 构建系数矩阵A</h3>
+                    <p>将单应矩阵H的9个元素按行展开为向量：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="h-vector-form"></div>
+                    </div>
+
+                    <p>对于每一对对应点 <span class="inline-math">(x_i, y_i) \rightarrow (x_i', y_i')</span>，我们可以构建两行系数矩阵：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="coefficient-matrix-row"></div>
+                    </div>
+
+                    <h3>4.3 缩放因子导致的多解</h3>
+                    <p>如果我们直接求解上述方程组，会发现一个问题：由于齐次坐标的性质，单应矩阵H可以乘以任意非零常数而不改变变换结果。这意味着方程组有无穷多个解。</p>
+
+                    <p>为了得到唯一解，不妨设：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="normalization-condition"></div>
+                    </div>
+
+                    <h3>4.4 转换为标准线性方程组</h3>
+                    <p>有了归一化条件 <span class="inline-math">h_{33} = 1</span>，我们现在只需要求解8个未知数。将已知的目标坐标 <span class="inline-math">x_i', y_i'</span> 移到方程右边，我们得到：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="standard-linear-system"></div>
+                    </div>
+
+                    <p>这就是标准的线性方程组 <span class="inline-math">Ah = b</span>，其中：</p>
+                    <ul>
+                        <li><strong>A</strong>：8×8的系数矩阵</li>
+                        <li><strong>h</strong>：8×1的未知向量 <span class="inline-math">[h_{11}, h_{12}, h_{13}, h_{21}, h_{22}, h_{23}, h_{31}, h_{32}]^T</span></li>
+                        <li><strong>b</strong>：8×1的常数向量，由目标坐标构成</li>
+                    </ul>
+
+                    <h3>4.5 实际求解中的挑战</h3>
+                    <p>虽然现在A是8×8的方阵，理论上可以用高斯消元法求解，但在实际应用中会遇到一些问题：</p>
 
                     <div class="problem-box">
-                        <h4>⚠️ 为什么简单的仿射变换不够？</h4>
-                        <p>仿射变换只能保持平行线平行，无法处理透视效果。而单应性变换可以将矩形变换为任意四边形，包括具有透视效果的梯形。</p>
+                        <h4>🤔 实际问题的挑战</h4>
+                        <ul>
+                            <li><strong>数值稳定性</strong>：实际数据中存在测量误差和噪声</li>
+                            <li><strong>矩阵可能接近奇异</strong>：当四个点接近共线时，矩阵条件数很大</li>
+                            <li><strong>鲁棒性要求</strong>：需要在有噪声的情况下得到最优解</li>
+                        </ul>
                     </div>
 
-                    <h3>2.2 单应性变换的数学定义</h3>
-                    <p>单应性变换是一种射影变换，在齐次坐标系下可以表示为矩阵乘法：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="homography-definition"></div>
-                    </div>
-
-                    <p>其中 <span class="inline-math" id="H-matrix"></span> 是一个 3×3 的单应矩阵。</p>
-
-                    <h3>2.3 从齐次坐标到笛卡尔坐标</h3>
-                    <p>将齐次坐标转换回普通的二维坐标：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="coordinate-conversion"></div>
-                    </div>
-
-                    <p>这就是我们最终用于图像变换的公式。</p>
+                    <p>这些问题使得直接用高斯消元法可能得到不稳定的解。我们需要更鲁棒的数值方法来处理这些情况。</p>
                 </section>
 
-                <!-- 3. 单应矩阵的结构 -->
+                <!-- 5. 广义逆与SVD分解 -->
                 <section class="theory-section">
-                    <h2 class="section-title">3. 单应矩阵的结构与性质</h2>
+                    <h2 class="section-title">5. 广义逆与SVD分解</h2>
 
-                    <h3>3.1 单应矩阵的一般形式</h3>
-                    <p>单应矩阵 <span class="inline-math" id="H-general"></span> 的一般形式为：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="matrix-structure"></div>
-                    </div>
+                    <h3>5.1 从逆矩阵到广义逆</h3>
+                    <p>针对第4节提到的数值稳定性问题，我们需要引入一个更强大的数学工具。还记得高代课上的逆矩阵吗？对于可逆方阵A，我们有 <span class="inline-math">A^{-1}A = AA^{-1} = I</span>，线性方程组 <span class="inline-math">Ah = b</span> 的解就是 <span class="inline-math">h = A^{-1}b</span>。</p>
 
-                    <h3>3.2 自由度分析</h3>
-                    <p>虽然矩阵有9个元素，但由于齐次性质（矩阵可以乘以任意非零常数），实际上只有8个独立参数。</p>
+                    <p>但当矩阵不可逆或接近奇异时，普通逆矩阵就不存在或数值不稳定了。这时候我们需要<strong>广义逆</strong>（也叫Moore-Penrose伪逆），记作 <span class="inline-math">A^+</span>。它的优势在于：</p>
+                    <ul>
+                        <li>如果A可逆，那么 <span class="inline-math">A^+ = A^{-1}</span>，结果完全一致</li>
+                        <li>如果A不可逆或接近奇异，<span class="inline-math">h = A^+b</span> 给出最小二乘意义下的最优解</li>
+                        <li>数值计算更加稳定，能够处理有噪声的数据</li>
+                    </ul>
 
-                    <div class="solution-box">
-                        <h4>💡 关键洞察</h4>
-                        <p>8个独立参数意味着我们需要至少4对对应点来确定单应矩阵（每对点提供2个约束方程）。</p>
-                    </div>
-
-                    <h3>3.3 约束方程的建立</h3>
-                    <p>对于每对对应点 <span class="inline-math" id="point-pair"></span>，我们有约束：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="constraint-equation"></div>
-                    </div>
-
-                    <p>这等价于叉积为零：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="cross-product-zero"></div>
-                    </div>
-                </section>
-
-                <!-- 4. 求解单应矩阵：核心算法 -->
-                <section class="theory-section">
-                    <h2 class="section-title">4. 求解单应矩阵：核心算法</h2>
-
-                    <h3>4.1 线性方程组的构建</h3>
-                    <p>将单应矩阵的9个元素排列成向量：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="matrix-vectorization"></div>
-                    </div>
-
-                    <p>每对对应点提供两个线性约束方程，4对点共8个方程：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="linear-system"></div>
-                    </div>
-
-                    <h3>4.2 理想情况：4对点的精确解</h3>
-                    <p>如果我们恰好有4对对应点，且这些点处于一般位置（没有三点共线），那么我们得到一个8×9的矩阵方程。</p>
-
-                    <div class="problem-box">
-                        <h4>🤔 为什么不能直接求逆？</h4>
-                        <p>因为我们有8个方程但9个未知数，这是一个欠定系统。而且由于齐次性质，我们实际上是在寻找矩阵 <span class="inline-math" id="A-matrix"></span> 的零空间。</p>
-                    </div>
-
-                    <h3>4.3 实际情况：超定系统</h3>
-                    <p>在实际应用中，我们通常有超过4对点，这时系统变成超定的（方程数大于未知数）。我们需要寻找最小二乘解：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="least-squares"></div>
-                    </div>
-                </section>
-
-                <!-- 5. 广义逆与SVD：数学工具 -->
-                <section class="theory-section">
-                    <h2 class="section-title">5. 广义逆与SVD：求解的数学工具</h2>
-
-                    <h3>5.1 为什么需要广义逆？</h3>
-                    <p>当矩阵不是方阵或者不可逆时，我们需要广义逆（伪逆）来求解线性方程组。</p>
-
-                    <div class="solution-box">
-                        <h4>💡 Moore-Penrose伪逆</h4>
-                        <p>对于矩阵 <span class="inline-math" id="matrix-A"></span>，其伪逆 <span class="inline-math" id="pseudoinverse"></span> 定义为：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="pseudoinverse-definition"></div>
-                        </div>
-                    </div>
-
-                    <h3>5.2 奇异值分解（SVD）</h3>
-                    <p>SVD是计算伪逆的最稳定方法。对于任意矩阵 <span class="inline-math" id="matrix-A-svd"></span>：</p>
+                    <h3>5.2 奇异值分解(SVD)</h3>
+                    <p>计算广义逆最有效的方法是通过奇异值分解。任何矩阵A都可以分解为：</p>
                     <div class="math-block">
                         <div class="katex-display" id="svd-decomposition"></div>
                     </div>
 
                     <p>其中：</p>
                     <ul>
-                        <li><span class="inline-math" id="U-matrix"></span> 和 <span class="inline-math" id="V-matrix"></span> 是正交矩阵</li>
-                        <li><span class="inline-math" id="sigma-matrix"></span> 是对角矩阵，包含奇异值</li>
+                        <li><strong>U和V</strong>：正交矩阵（列向量都是单位向量且互相垂直）</li>
+                        <li><strong>Σ</strong>：对角矩阵，对角线上是奇异值 <span class="inline-math">σ_1 ≥ σ_2 ≥ ... ≥ σ_r ≥ 0</span></li>
                     </ul>
 
-                    <h3>5.3 通过SVD求解</h3>
-                    <p>单应矩阵对应于矩阵 <span class="inline-math" id="A-svd"></span> 最小奇异值对应的右奇异向量：</p>
+                    <h3>5.3 用SVD计算广义逆</h3>
+                    <p>有了SVD分解，广义逆可以表示为：</p>
                     <div class="math-block">
-                        <div class="katex-display" id="svd-solution"></div>
-                    </div>
-                </section>
-
-                <!-- 6. 本项目的图像嵌入Pipeline -->
-                <section class="theory-section">
-                    <h2 class="section-title">6. 本项目的图像嵌入Pipeline</h2>
-
-                    <h3>6.1 完整的算法流程</h3>
-                    <div class="highlight-box">
-                        <h4>🔄 图像嵌入算法步骤</h4>
-                        <ol>
-                            <li><strong>输入处理</strong>：获取源图像和目标四边形顶点</li>
-                            <li><strong>对应点设置</strong>：建立源图像角点与目标顶点的对应关系</li>
-                            <li><strong>构建约束矩阵</strong>：根据对应点构建线性方程组</li>
-                            <li><strong>SVD求解</strong>：计算单应矩阵</li>
-                            <li><strong>图像变换</strong>：应用单应变换到源图像</li>
-                            <li><strong>结果合成</strong>：将变换后的图像嵌入到目标图像</li>
-                        </ol>
+                        <div class="katex-display" id="pseudoinverse-svd"></div>
                     </div>
 
-                    <h3>6.2 对应点的精确定义</h3>
-                    <p>在我们的实现中，对应关系定义如下：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="project-correspondence"></div>
-                    </div>
-
-                    <h3>6.3 实际变换公式</h3>
-                    <p>对于源图像中的每个像素点 <span class="inline-math" id="source-pixel"></span>，其在目标图像中的位置为：</p>
-                    <div class="math-block">
-                        <div class="katex-display" id="pixel-transform"></div>
-                    </div>
-
-                    <h3>6.4 实现中的技术细节</h3>
-                    <ul>
-                        <li><strong>逆向映射</strong>：为避免空洞，我们从目标像素反向计算源像素位置</li>
-                        <li><strong>双线性插值</strong>：处理非整数坐标的像素值</li>
-                        <li><strong>边界检查</strong>：确保变换后的像素在有效范围内</li>
-                        <li><strong>透明度处理</strong>：支持带透明通道的图像嵌入</li>
-                    </ul>
-                </section>
-
-                <!-- 7. 其他应用领域 -->
-                <section class="theory-section">
-                    <h2 class="section-title">7. 单应性变换的其他应用</h2>
-
-                    <p>单应性变换作为计算机视觉的基础工具，在许多领域都有重要应用：</p>
-
-                    <div class="application-grid">
-                        <div class="application-item">
-                            <h4>🚗 汽车环视系统</h4>
-                            <p>将多个摄像头的图像拼接成鸟瞰图，帮助驾驶员了解车辆周围环境。</p>
-                        </div>
-                        <div class="application-item">
-                            <h4>📱 增强现实(AR)</h4>
-                            <p>将虚拟物体准确地叠加到现实场景中，实现虚实融合的视觉效果。</p>
-                        </div>
-                        <div class="application-item">
-                            <h4>📷 图像拼接</h4>
-                            <p>将多张有重叠区域的照片拼接成全景图像。</p>
-                        </div>
-                        <div class="application-item">
-                            <h4>🏢 建筑测量</h4>
-                            <p>从倾斜拍摄的建筑照片中恢复真实的几何尺寸。</p>
-                        </div>
-                        <div class="application-item">
-                            <h4>🎮 游戏开发</h4>
-                            <p>实现3D场景到2D屏幕的透视投影变换。</p>
-                        </div>
-                        <div class="application-item">
-                            <h4>🔍 文档扫描</h4>
-                            <p>校正倾斜拍摄的文档，恢复矩形的文档形状。</p>
-                        </div>
-                    </div>
-
-                    <h3>7.1 技术发展趋势</h3>
-                    <p>随着深度学习的发展，单应性变换的估计也在不断改进：</p>
-                    <ul>
-                        <li><strong>深度学习方法</strong>：使用神经网络直接预测单应矩阵</li>
-                        <li><strong>实时处理</strong>：GPU加速使得实时单应变换成为可能</li>
-                        <li><strong>鲁棒性提升</strong>：结合RANSAC等算法处理噪声和异常值</li>
-                        <li><strong>多视图几何</strong>：扩展到多个视角的同时处理</li>
-                    </ul>
-                </section>
-
-                <!-- 总结 -->
-                <section class="theory-section">
-                    <h2 class="section-title">总结</h2>
+                    <p>其中 <span class="inline-math">Σ^+</span> 是通过将Σ中非零奇异值取倒数得到的。</p>
 
                     <div class="highlight-box">
-                        <h4>🎯 核心要点回顾</h4>
+                        <h4>🎯 SVD求解的优势</h4>
                         <ul>
-                            <li><strong>问题本质</strong>：将矩形图像变换为任意四边形</li>
-                            <li><strong>数学工具</strong>：单应性变换提供了完美的解决方案</li>
-                            <li><strong>求解方法</strong>：通过SVD求解超定线性方程组</li>
-                            <li><strong>实际应用</strong>：从图像嵌入到AR，应用广泛</li>
+                            <li><strong>数值稳定</strong>：即使矩阵接近奇异，SVD也能给出稳定的解</li>
+                            <li><strong>自动处理奇异情况</strong>：小的奇异值会被自动"过滤"掉</li>
+                            <li><strong>最优性</strong>：给出的是最小二乘意义下的最优解</li>
                         </ul>
                     </div>
 
-                    <p>通过理解单应性变换的数学原理，我们不仅能够实现精确的图像嵌入，还为进一步探索计算机视觉的其他领域奠定了坚实的理论基础。</p>
+                    <p>因此，我们的单应矩阵参数向量为：<span class="inline-math">h = A^+b</span>，通过SVD分解高效计算。</p>
+                </section>
 
-                    <p>这个看似简单的"将图像放到四边形中"的问题，实际上涉及了线性代数、数值分析、计算几何等多个数学分支，体现了数学在解决实际问题中的强大威力。</p>
+                <!-- 6. 图像嵌入的完整Pipeline -->
+                <section class="theory-section">
+                    <h2 class="section-title">6. 图像嵌入的完整Pipeline</h2>
+
+                    <h3>6.1 算法步骤总结</h3>
+                    <p>现在我们可以把整个图像嵌入的数学计算过程总结如下：</p>
+
+                    <div class="highlight-box">
+                        <h4>🔄 完整算法流程</h4>
+                        <ol>
+                            <li><strong>输入数据</strong>：源图像四个角点坐标 <span class="inline-math">(x_i, y_i)</span>，用户选择的四个目标点坐标 <span class="inline-math">(x_i', y_i')</span></li>
+                            <li><strong>建立对应关系</strong>：确定源图像角点与目标点的一一对应</li>
+                            <li><strong>构建约束方程</strong>：根据单应变换关系建立线性约束条件</li>
+                            <li><strong>组装系数矩阵A</strong>：将约束条件组织成8×9的线性方程组 <span class="inline-math">Ah = 0</span></li>
+                            <li><strong>SVD分解</strong>：计算 <span class="inline-math">A = UΣV^T</span></li>
+                            <li><strong>提取解向量</strong>：单应矩阵向量 <span class="inline-math">h</span> = V矩阵的最后一列</li>
+                            <li><strong>重塑为矩阵</strong>：将9×1向量h重塑为3×3单应矩阵H</li>
+                            <li><strong>图像变换</strong>：对源图像每个像素应用单应变换</li>
+                            <li><strong>合成结果</strong>：将变换后的图像嵌入背景图像</li>
+                        </ol>
+                    </div>
+
+                    <h3>6.2 具体实现时的考虑</h3>
+                    <p>在本工具的具体实现中，源图像的四个角点坐标为：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="concrete-coordinates"></div>
+                    </div>
+                    <p>其中w和h分别是源图像的宽度和高度。</p>
+
+                    <h3>6.3 SVD优点</h3>
+                    <ul>
+                        <li><strong>数值稳定</strong>：SVD算法在数值计算中非常稳定，不容易出现数值误差</li>
+                        <li><strong>自动处理奇异情况</strong>：即使矩阵接近奇异，SVD也能给出合理的解</li>
+                        <li><strong>提供误差信息</strong>：最小奇异值的大小告诉我们解的质量</li>
+                        <li><strong>广泛支持</strong>：几乎所有数值计算库都有高效的SVD实现</li>
+                    </ul>
+                </section>
+
+                <!-- 7. 单应变换的其他应用 -->
+                <section class="theory-section">
+                    <h2 class="section-title">7. 单应变换的其他应用</h2>
+
+                    <p>学会了单应变换，你就掌握了计算机视觉领域中的一个重要工具。它的应用远不止图像嵌入：</p>
+
+                    <div class="highlight-box">
+                        <h4>🌟 经典应用场景</h4>
+                        <div class="application-grid">
+                            <div class="application-item">
+                                <h4>📱 矫正文档</h4>
+                                <p>文档矫正的核心就是单应变换——将拍歪的文档恢复成标准矩形</p>
+                            </div>
+                            <div class="application-item">
+                                <h4>🚗 汽车环视系统</h4>
+                                <p>将后视摄像头的图像变换成"上帝视角"的鸟瞰图</p>
+                            </div>
+                            <div class="application-item">
+                                <h4>📷 全景拼接</h4>
+                                <p>将多张照片拼接成全景图，每张照片间的对齐就用单应变换</p>
+                            </div>
+                            <div class="application-item">
+                                <h4>🎮 增强现实(AR)</h4>
+                                <p>将虚拟物体"贴"到现实场景中，让它们看起来真实存在</p>
+                            </div>
+                            <div class="application-item">
+                                <h4>🏢 建筑测量</h4>
+                                <p>从倾斜拍摄的建筑照片中测量真实尺寸</p>
+                            </div>
+                            <div class="application-item">
+                                <h4>🎬 电影特效</h4>
+                                <p>将演员拍摄的画面无缝融入虚拟背景</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- 8. 总结：从高代课堂到现实应用 -->
+                <section class="theory-section">
+                    <h2 class="section-title">8. 总结：从高代课堂到现实应用</h2>
+
+                    <p>回到文章开头的问题：扫描王是怎么矫正文档的？汽车倒车影像是怎么实现的？虽然这些在细节上和目前讨论的还是有些差异，但想必你已经知道了大致的思路。</p>
+
+                    <div class="highlight-box">
+                        <h4>🎓 我们的学习之旅</h4>
+                        <ol>
+                            <li><strong>从生活现象出发</strong>：观察到视角变化带来的投影变形</li>
+                            <li><strong>连接高代知识</strong>：从基础线性变换扩展到透视变换</li>
+                            <li><strong>引入数学工具</strong>：单应变换和单应矩阵</li>
+                            <li><strong>建立数学模型</strong>：将图像嵌入问题转化为线性方程组</li>
+                            <li><strong>解决计算问题</strong>：用广义逆和SVD求解</li>
+                            <li><strong>回到实际应用</strong>：理解各种视觉应用的原理</li>
+                        </ol>
+                    </div>
+
+                    <p>高代课上学的矩阵、线性变换，原来还有这么酷的应用！</p>
+
+                    <h3>9.1 拓展知识</h3>
+                    <p>一个看似简单的"把图片嵌入到四边形里"的需求，背后竟然涉及了：</p>
+                    <ul>
+                        <li><strong>线性代数</strong>：矩阵运算、齐次坐标、线性方程组</li>
+                        <li><strong>数值分析</strong>：SVD分解、广义逆</li>
+                        <li><strong>计算几何</strong>：透视变换、坐标系转换</li>
+                        <li><strong>图像处理</strong>：像素插值、边界处理</li>
+                    </ul>
+
+                    <p>如果你对单应变换的应用感兴趣，可以继续学习：</p>
+                    <ul>
+                        <li><strong>计算机视觉</strong>：更多的几何变换和图像处理技术</li>
+                        <li><strong>机器学习</strong>：用神经网络自动学习变换参数</li>
+                        <li><strong>图形学</strong>：3D到2D的投影变换</li>
+                        <li><strong>机器人学</strong>：视觉导航和SLAM技术</li>
+                    </ul>
+
                 </section>
             </div>
         </div>
