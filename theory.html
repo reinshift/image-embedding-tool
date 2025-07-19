@@ -4,62 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>原理介绍 - 图像嵌入工具</title>
-    <!-- 预加载关键资源 -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" as="style">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js" as="script">
-
-    <!-- 样式表 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <!-- 优化的资源加载 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
-    <link rel="stylesheet" href="theory-style.css">
 
-    <!-- 内联关键CSS以减少渲染阻塞 -->
+    <!-- 内联关键CSS -->
     <style>
-        /* 数学公式占位符样式，避免布局跳动 */
-        .katex-display:empty {
-            min-height: 2.5em;
-            background: linear-gradient(90deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%);
+        /* 加载优化 */
+        .katex-display:empty, .inline-math:empty {
+            background: linear-gradient(90deg, #f0f0f0 25%, transparent 25%);
             background-size: 20px 20px;
             animation: loading-shimmer 1.5s infinite;
             border-radius: 4px;
-            margin: 1rem 0;
         }
-
-        .inline-math:empty {
-            min-width: 2em;
-            min-height: 1.2em;
-            background: linear-gradient(90deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%);
-            background-size: 10px 10px;
-            animation: loading-shimmer 1.5s infinite;
-            border-radius: 3px;
-            display: inline-block;
-        }
+        .katex-display:empty { min-height: 2.5em; margin: 1rem 0; }
+        .inline-math:empty { min-width: 2em; min-height: 1.2em; display: inline-block; }
 
         @keyframes loading-shimmer {
             0% { background-position: -200px 0; }
             100% { background-position: 200px 0; }
         }
 
-        /* 优化字体加载 */
-        .katex {
-            font-display: swap; /* 使用系统字体直到KaTeX字体加载完成 */
+        /* 简化的加载指示器 */
+        .loading-indicator {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            background: rgba(36, 211, 122, 0.9); color: white;
+            padding: 10px 20px; border-radius: 6px;
+            font-size: 14px; font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: none; transition: all 0.3s ease;
+        }
+        .loading-indicator.show { display: block; }
+
+        /* 优化的布局 */
+        .theory-container {
+            min-height: 100vh;
+            background: #f8f9fa;
+            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .theory-content { padding: 2rem 0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 1rem; }
+
+        .theory-section {
+            background: white;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            color: #333;
+            border-bottom: 2px solid #24d37a;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .math-block {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            border-left: 3px solid #24d37a;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .inline-math {
+            background: rgba(36, 211, 122, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        /* 导航 */
+        .theory-nav {
+            background: white;
+            color: #333;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .nav-content {
+            max-width: 900px; margin: 0 auto; padding: 0 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .nav-title {
+            font-size: 1.25rem; font-weight: 600;
+            color: #333;
+        }
+        .back-btn {
+            background: #24d37a;
+            border: 1px solid #24d37a;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .back-btn:hover {
+            background: #1cb967;
+            border-color: #1cb967;
+            transform: translateY(-1px);
+        }
+
+        /* 特殊样式 - 使用统一的绿色系配色方案 */
+        .highlight-box {
+            background: #1fab89;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid #0f7b6c;
+        }
+        .problem-box {
+            background: #d7fbe8;
+            border: 1px solid #9df3c4;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #0f7b6c;
+            border-left: 4px solid #62d2a2;
+        }
+        .solution-box {
+            background: #9df3c4;
+            border: 1px solid #62d2a2;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #0f7b6c;
+            border-left: 4px solid #1fab89;
+        }
+        .application-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .application-item {
+            background: #d7fbe8;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #1fab89;
+            border: 1px solid #9df3c4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            color: #0f7b6c;
+        }
+
+        /* 文字样式 */
+        h3 {
+            color: #333;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        h4 {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            color: #555;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.25rem;
         }
     </style>
 </head>
 <body>
+    <!-- 简化的加载指示器 -->
+    <div id="loading-indicator" class="loading-indicator">
+        正在渲染数学公式... <span id="progress-text">0/0</span>
+    </div>
+
     <div class="theory-container">
         <!-- 导航栏 -->
         <nav class="theory-nav">
             <div class="nav-content">
                 <div class="nav-brand">
-                    <img src="default-logo.svg" alt="Logo" class="nav-logo">
-                    <span class="nav-title">原理介绍</span>
+                    <span class="nav-title">📐 图像嵌入的数学原理</span>
                 </div>
                 <button class="back-btn" onclick="goBackToApp()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
-                    返回应用
+                    ← 返回应用
                 </button>
             </div>
         </nav>
@@ -67,709 +211,264 @@
         <!-- 主内容 -->
         <div class="theory-content">
             <div class="container">
-                <!-- 目录 -->
-                <div class="toc-section">
-                    <h2 class="toc-title">目录</h2>
-                    <ul class="toc-list">
-                        <li><a href="#background">1. 引言：图像嵌入的数学背景</a></li>
-                        <li><a href="#homography-definition">2. 单应性变换的定义与性质</a></li>
-                        <li><a href="#mathematical-formulation">3. 单应性变换的数学表达</a></li>
-                        <li><a href="#homography-matrix">4. 单应矩阵的结构与求解</a></li>
-                        <li><a href="#pseudoinverse-theory">5. 广义逆理论</a></li>
-                        <li><a href="#solution-method">6. 单应矩阵的求解方法</a></li>
-                        <li><a href="#application-example">7. 图像嵌入的完整数学过程</a></li>
+                <!-- 1. 图像嵌入背景介绍 -->
+                <section class="theory-section">
+                    <h2 class="section-title">1. 图像嵌入的背景与应用</h2>
+
+                    <h3>1.1 什么是图像嵌入？</h3>
+                    <p>图像嵌入是指将一张图像（源图像）变形后放置到另一张图像（目标图像）的指定区域内的技术。这种技术在现代计算机视觉和图像处理中有着广泛的应用。</p>
+
+                    <div class="highlight-box">
+                        <h4>🎯 核心问题</h4>
+                        <p>如何将一个矩形的源图像精确地嵌入到目标图像中的任意四边形区域？</p>
+                    </div>
+
+                    <h3>1.2 数学问题描述</h3>
+                    <p>假设我们有：</p>
+                    <ul>
+                        <li>源图像：尺寸为 <span class="inline-math" id="source-size"></span> 的矩形图像</li>
+                        <li>目标区域：由四个顶点 <span class="inline-math" id="target-vertices"></span> 定义的四边形</li>
                     </ul>
-                </div>
 
-                <!-- 1. 引言：图像嵌入的数学背景 -->
-                <section id="background" class="theory-section">
-                    <h2 class="section-title">1. 引言：图像嵌入的数学背景</h2>
-
-                    <div class="content-block">
-                        <h3>1.1 问题的数学描述</h3>
-                        <p>考虑图像嵌入问题：给定源图像 <span class="inline-math" id="source-image"></span> 和目标图像 <span class="inline-math" id="target-image"></span>，我们希望将源图像变换后嵌入到目标图像的指定区域。</p>
-
-                        <p>设源图像为矩形区域，其四个角点为：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="source-corners"></div>
-                        </div>
-
-                        <p>目标区域为一般四边形，其四个角点为：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="target-corners"></div>
-                        </div>
-
-                        <p>问题归结为：寻找一个变换 <span class="inline-math" id="transform-T"></span>，使得</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="transform-mapping"></div>
-                        </div>
+                    <p>源图像的四个角点坐标为：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="source-corners"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>1.2 几何变换的分类</h3>
-                        <p>在计算机视觉和图像处理中，常见的几何变换包括：</p>
-
-                        <div class="transform-hierarchy">
-                            <div class="transform-level">
-                                <strong>欧几里得变换</strong>：平移 + 旋转（保持距离和角度）
-                            </div>
-                            <div class="transform-level">
-                                <strong>相似变换</strong>：欧几里得变换 + 均匀缩放（保持角度）
-                            </div>
-                            <div class="transform-level">
-                                <strong>仿射变换</strong>：相似变换 + 剪切（保持平行线）
-                            </div>
-                            <div class="transform-level">
-                                <strong>射影变换</strong>：仿射变换 + 透视变换（保持直线）
-                            </div>
-                        </div>
-
-                        <p>对于图像嵌入问题，由于目标区域是一般四边形，我们需要使用<strong>射影变换</strong>（也称为单应性变换）。</p>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>1.3 数学预备知识</h3>
-                        <p>在深入讨论单应性变换之前，我们需要回顾以下数学概念：</p>
-
-                        <div class="math-prerequisites">
-                            <div class="prereq-item">
-                                <h4>齐次坐标</h4>
-                                <p>二维点 <span class="inline-math" id="point-2d"></span> 的齐次坐标表示为 <span class="inline-math" id="point-homogeneous"></span></p>
-                            </div>
-                            <div class="prereq-item">
-                                <h4>线性变换</h4>
-                                <p>齐次坐标下的线性变换可表示为矩阵乘法</p>
-                            </div>
-                            <div class="prereq-item">
-                                <h4>矩阵的秩与零空间</h4>
-                                <p>求解齐次线性方程组的理论基础</p>
-                            </div>
-                        </div>
+                    <p>我们需要找到一个数学变换，将这些角点精确映射到目标四边形的顶点：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="mapping-requirement"></div>
                     </div>
                 </section>
 
-                <!-- 2. 单应性变换的定义与性质 -->
-                <section id="homography-definition" class="theory-section">
-                    <h2 class="section-title">2. 单应性变换的定义与性质</h2>
+                <!-- 2. 单应性变换介绍 -->
+                <section class="theory-section">
+                    <h2 class="section-title">2. 单应性变换：解决问题的数学工具</h2>
 
-                    <div class="content-block">
-                        <h3>定义 2.1 (单应性变换)</h3>
-                        <div class="definition-box">
-                            <p>设 <span class="inline-math" id="plane1"></span> 和 <span class="inline-math" id="plane2"></span> 为两个平面，单应性变换是一个可逆的映射 <span class="inline-math" id="homography-map"></span>，满足：</p>
-                            <ol>
-                                <li>将直线映射为直线</li>
-                                <li>保持交比不变</li>
-                                <li>可由一个非奇异的 3×3 矩阵表示</li>
-                            </ol>
-                        </div>
+                    <h3>2.1 为什么需要单应性变换？</h3>
+                    <p>要将矩形变换为任意四边形，我们需要一种能够处理透视变形的数学变换。单应性变换（Homography）正是这样的工具。</p>
+
+                    <div class="problem-box">
+                        <h4>⚠️ 为什么简单的仿射变换不够？</h4>
+                        <p>仿射变换只能保持平行线平行，无法处理透视效果。而单应性变换可以将矩形变换为任意四边形，包括具有透视效果的梯形。</p>
                     </div>
 
-                    <div class="content-block">
-                        <h3>定理 2.1 (单应性变换的矩阵表示)</h3>
-                        <div class="theorem-box">
-                            <p>任意单应性变换都可以表示为齐次坐标下的矩阵乘法：</p>
-                            <div class="math-block">
-                                <div class="katex-display" id="homography-matrix-form"></div>
-                            </div>
-                            <p>其中 <span class="inline-math" id="H-matrix"></span> 为非奇异的 3×3 矩阵，称为单应矩阵。</p>
-                        </div>
+                    <h3>2.2 单应性变换的数学定义</h3>
+                    <p>单应性变换是一种射影变换，在齐次坐标系下可以表示为矩阵乘法：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="homography-definition"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>性质 2.1 (单应性变换的基本性质)</h3>
-                        <div class="properties-list">
-                            <div class="property-item">
-                                <strong>齐次性：</strong>矩阵 <span class="inline-math" id="H-scale"></span> 与 <span class="inline-math" id="H-original"></span> 表示同一变换，其中 <span class="inline-math" id="lambda-nonzero"></span>
-                            </div>
-                            <div class="property-item">
-                                <strong>自由度：</strong>单应矩阵有8个独立参数（9个元素减去1个尺度因子）
-                            </div>
-                            <div class="property-item">
-                                <strong>可逆性：</strong>若 <span class="inline-math" id="H-invertible"></span>，则逆变换为 <span class="inline-math" id="H-inverse"></span>
-                            </div>
-                            <div class="property-item">
-                                <strong>群性质：</strong>单应性变换构成群，即变换的复合仍为单应性变换
-                            </div>
-                        </div>
+                    <p>其中 <span class="inline-math" id="H-matrix"></span> 是一个 3×3 的单应矩阵。</p>
+
+                    <h3>2.3 从齐次坐标到笛卡尔坐标</h3>
+                    <p>将齐次坐标转换回普通的二维坐标：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="coordinate-conversion"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>引理 2.1 (四点确定单应性变换)</h3>
-                        <div class="lemma-box">
-                            <p>给定两个平面上各四个点，且每组四点中无三点共线，则存在唯一的单应性变换将第一组点映射到第二组点。</p>
+                    <p>这就是我们最终用于图像变换的公式。</p>
+                </section>
 
-                            <p><strong>证明思路：</strong>四对点提供8个约束条件，而单应矩阵有8个自由度，因此系统恰好确定。</p>
-                        </div>
+                <!-- 3. 单应矩阵的结构 -->
+                <section class="theory-section">
+                    <h2 class="section-title">3. 单应矩阵的结构与性质</h2>
+
+                    <h3>3.1 单应矩阵的一般形式</h3>
+                    <p>单应矩阵 <span class="inline-math" id="H-general"></span> 的一般形式为：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="matrix-structure"></div>
+                    </div>
+
+                    <h3>3.2 自由度分析</h3>
+                    <p>虽然矩阵有9个元素，但由于齐次性质（矩阵可以乘以任意非零常数），实际上只有8个独立参数。</p>
+
+                    <div class="solution-box">
+                        <h4>💡 关键洞察</h4>
+                        <p>8个独立参数意味着我们需要至少4对对应点来确定单应矩阵（每对点提供2个约束方程）。</p>
+                    </div>
+
+                    <h3>3.3 约束方程的建立</h3>
+                    <p>对于每对对应点 <span class="inline-math" id="point-pair"></span>，我们有约束：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="constraint-equation"></div>
+                    </div>
+
+                    <p>这等价于叉积为零：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="cross-product-zero"></div>
                     </div>
                 </section>
 
-                <!-- 3. 单应性变换的数学表达 -->
-                <section id="mathematical-formulation" class="theory-section">
-                    <h2 class="section-title">3. 单应性变换的数学表达</h2>
+                <!-- 4. 求解单应矩阵：核心算法 -->
+                <section class="theory-section">
+                    <h2 class="section-title">4. 求解单应矩阵：核心算法</h2>
 
-                    <div class="content-block">
-                        <h3>3.1 齐次坐标表示</h3>
-                        <p>在齐次坐标系下，单应性变换具有简洁的线性形式。设点 <span class="inline-math" id="point-p"></span> 在齐次坐标下表示为 <span class="inline-math" id="point-p-homo"></span>，则单应性变换为：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="homography-eq1"></div>
-                        </div>
-
-                        <p>其中单应矩阵 <span class="inline-math" id="H-matrix"></span> 的一般形式为：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="H-general-form"></div>
-                        </div>
+                    <h3>4.1 线性方程组的构建</h3>
+                    <p>将单应矩阵的9个元素排列成向量：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="matrix-vectorization"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>3.2 非齐次坐标的变换公式</h3>
-                        <p>将齐次坐标转换为非齐次坐标，得到实际的变换公式：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="nonhomogeneous-transform"></div>
-                        </div>
-
-                        <p>这里的分母 <span class="inline-math" id="denominator"></span> 正是产生透视效果的关键因子。</p>
+                    <p>每对对应点提供两个线性约束方程，4对点共8个方程：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="linear-system"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>3.3 单应矩阵的几何意义</h3>
-                        <p>单应矩阵的9个参数可以分解为不同的几何变换：</p>
+                    <h3>4.2 理想情况：4对点的精确解</h3>
+                    <p>如果我们恰好有4对对应点，且这些点处于一般位置（没有三点共线），那么我们得到一个8×9的矩阵方程。</p>
 
-                        <div class="math-block">
-                            <div class="katex-display" id="H-decomposition"></div>
-                        </div>
-
-                        <div class="geometric-interpretation">
-                            <div class="interp-item">
-                                <span class="inline-math" id="A-matrix"></span>：仿射变换部分（旋转、缩放、剪切）
-                            </div>
-                            <div class="interp-item">
-                                <span class="inline-math" id="t-vector"></span>：平移向量
-                            </div>
-                            <div class="interp-item">
-                                <span class="inline-math" id="v-vector"></span>：透视变换向量
-                            </div>
-                            <div class="interp-item">
-                                <span class="inline-math" id="v-scalar"></span>：标量因子
-                            </div>
-                        </div>
+                    <div class="problem-box">
+                        <h4>🤔 为什么不能直接求逆？</h4>
+                        <p>因为我们有8个方程但9个未知数，这是一个欠定系统。而且由于齐次性质，我们实际上是在寻找矩阵 <span class="inline-math" id="A-matrix"></span> 的零空间。</p>
                     </div>
 
-                    <div class="content-block">
-                        <h3>3.4 变换的不变性质</h3>
-                        <div class="invariant-properties">
-                            <div class="invariant-item">
-                                <h4>直线保持性</h4>
-                                <p>直线在单应性变换下仍为直线</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="line-preservation"></div>
-                                </div>
-                            </div>
-                            <div class="invariant-item">
-                                <h4>交比不变性</h4>
-                                <p>四个共线点的交比在变换下保持不变</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="cross-ratio"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <h3>4.3 实际情况：超定系统</h3>
+                    <p>在实际应用中，我们通常有超过4对点，这时系统变成超定的（方程数大于未知数）。我们需要寻找最小二乘解：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="least-squares"></div>
                     </div>
                 </section>
 
-                <!-- 4. 单应矩阵的结构与求解 -->
-                <section id="homography-matrix" class="theory-section">
-                    <h2 class="section-title">4. 单应矩阵的结构与求解</h2>
+                <!-- 5. 广义逆与SVD：数学工具 -->
+                <section class="theory-section">
+                    <h2 class="section-title">5. 广义逆与SVD：求解的数学工具</h2>
 
-                    <div class="content-block">
-                        <h3>4.1 点对应约束的建立</h3>
-                        <p>给定对应点对 <span class="inline-math" id="point-pair"></span>，单应性约束为：</p>
+                    <h3>5.1 为什么需要广义逆？</h3>
+                    <p>当矩阵不是方阵或者不可逆时，我们需要广义逆（伪逆）来求解线性方程组。</p>
 
+                    <div class="solution-box">
+                        <h4>💡 Moore-Penrose伪逆</h4>
+                        <p>对于矩阵 <span class="inline-math" id="matrix-A"></span>，其伪逆 <span class="inline-math" id="pseudoinverse"></span> 定义为：</p>
                         <div class="math-block">
-                            <div class="katex-display" id="point-correspondence"></div>
-                        </div>
-
-                        <p>展开齐次坐标，得到：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="expanded-correspondence"></div>
+                            <div class="katex-display" id="pseudoinverse-definition"></div>
                         </div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>4.2 线性化处理</h3>
-                        <p>由于齐次坐标的尺度不确定性，我们有 <span class="inline-math" id="scale-constraint"></span>。利用向量叉积的性质：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="cross-product-constraint"></div>
-                        </div>
-
-                        <p>展开得到两个线性约束方程：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="dlt-equations"></div>
-                        </div>
+                    <h3>5.2 奇异值分解（SVD）</h3>
+                    <p>SVD是计算伪逆的最稳定方法。对于任意矩阵 <span class="inline-math" id="matrix-A-svd"></span>：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="svd-decomposition"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>4.3 系数矩阵的构造</h3>
-                        <p>对于 <span class="inline-math" id="n-points"></span> 对点，我们得到 <span class="inline-math" id="2n-equations"></span> 个线性方程。将单应矩阵向量化为 <span class="inline-math" id="h-vector"></span>，系统可写为：</p>
+                    <p>其中：</p>
+                    <ul>
+                        <li><span class="inline-math" id="U-matrix"></span> 和 <span class="inline-math" id="V-matrix"></span> 是正交矩阵</li>
+                        <li><span class="inline-math" id="sigma-matrix"></span> 是对角矩阵，包含奇异值</li>
+                    </ul>
 
-                        <div class="math-block">
-                            <div class="katex-display" id="linear-system"></div>
-                        </div>
-
-                        <p>其中系数矩阵 <span class="inline-math" id="A-matrix-size"></span> 的第 <span class="inline-math" id="i-th-row"></span> 行为：</p>
-                        <div class="math-block">
-                            <div class="katex-display" id="A-matrix-rows"></div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>4.4 齐次线性方程组</h3>
-                        <p>当 <span class="inline-math" id="n-equals-4"></span> 时，我们有8个方程和9个未知数。由于单应矩阵的齐次性，问题转化为求解：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="homogeneous-system"></div>
-                        </div>
-
-                        <p>在约束 <span class="inline-math" id="norm-constraint"></span> 下的最小二乘解。</p>
+                    <h3>5.3 通过SVD求解</h3>
+                    <p>单应矩阵对应于矩阵 <span class="inline-math" id="A-svd"></span> 最小奇异值对应的右奇异向量：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="svd-solution"></div>
                     </div>
                 </section>
 
-                <!-- 5. 广义逆理论 -->
-                <section id="pseudoinverse-theory" class="theory-section">
-                    <h2 class="section-title">5. 广义逆理论</h2>
+                <!-- 6. 本项目的图像嵌入Pipeline -->
+                <section class="theory-section">
+                    <h2 class="section-title">6. 本项目的图像嵌入Pipeline</h2>
 
-                    <div class="content-block">
-                        <h3>5.1 为什么需要广义逆？</h3>
-                        <p>在第4章中，我们得到了齐次线性方程组 <span class="inline-math" id="Ah-zero-intro"></span>。你可能会问：为什么不直接求解 <span class="inline-math" id="A-inverse"></span> 呢？</p>
-
-                        <div class="problem-explanation">
-                            <div class="problem-item">
-                                <h4>🚫 直接求逆的问题</h4>
-                                <ul>
-                                    <li><strong>矩阵不是方阵</strong>：<span class="inline-math" id="A-size-8x9"></span>，无法直接求逆</li>
-                                    <li><strong>齐次方程组</strong>：即使是方阵，<span class="inline-math" id="Ah-zero-problem"></span> 的非零解要求 <span class="inline-math" id="A-singular"></span></li>
-                                    <li><strong>数值稳定性</strong>：接近奇异的矩阵求逆会导致数值不稳定</li>
-                                </ul>
-                            </div>
-
-                            <div class="problem-item">
-                                <h4>✅ 广义逆的优势</h4>
-                                <ul>
-                                    <li><strong>适用于任意矩阵</strong>：无论矩阵是否方阵、是否奇异</li>
-                                    <li><strong>最小范数解</strong>：在所有解中选择范数最小的解</li>
-                                    <li><strong>数值稳定</strong>：通过SVD分解保证计算稳定性</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <p>因此，我们需要引入<strong>广义逆（伪逆）</strong>的概念来处理这类问题。</p>
+                    <h3>6.1 完整的算法流程</h3>
+                    <div class="highlight-box">
+                        <h4>🔄 图像嵌入算法步骤</h4>
+                        <ol>
+                            <li><strong>输入处理</strong>：获取源图像和目标四边形顶点</li>
+                            <li><strong>对应点设置</strong>：建立源图像角点与目标顶点的对应关系</li>
+                            <li><strong>构建约束矩阵</strong>：根据对应点构建线性方程组</li>
+                            <li><strong>SVD求解</strong>：计算单应矩阵</li>
+                            <li><strong>图像变换</strong>：应用单应变换到源图像</li>
+                            <li><strong>结果合成</strong>：将变换后的图像嵌入到目标图像</li>
+                        </ol>
                     </div>
 
-                    <div class="content-block">
-                        <h3>定义 5.1 (Moore-Penrose广义逆)</h3>
-                        <div class="definition-box">
-                            <p>对于矩阵 <span class="inline-math" id="matrix-A"></span>，其Moore-Penrose广义逆 <span class="inline-math" id="A-pseudoinverse"></span> 是唯一满足以下四个条件的矩阵：</p>
-                            <div class="math-block">
-                                <div class="katex-display" id="mp-conditions"></div>
-                            </div>
-                        </div>
+                    <h3>6.2 对应点的精确定义</h3>
+                    <p>在我们的实现中，对应关系定义如下：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="project-correspondence"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>5.2 为什么使用SVD分解？</h3>
-                        <p>计算广义逆有多种方法，但<strong>奇异值分解（SVD）</strong>是最稳定和通用的方法：</p>
-
-                        <div class="svd-advantages">
-                            <div class="advantage-item">
-                                <h4>🔢 数值稳定性</h4>
-                                <p>SVD分解在数值计算中非常稳定，即使对于病态矩阵也能给出可靠结果</p>
-                            </div>
-                            <div class="advantage-item">
-                                <h4>📊 几何直观</h4>
-                                <p>SVD揭示了矩阵的几何结构：主方向、拉伸因子、零空间等</p>
-                            </div>
-                            <div class="advantage-item">
-                                <h4>🎯 最优性</h4>
-                                <p>通过SVD计算的广义逆给出最小范数解，具有最优的数学性质</p>
-                            </div>
-                        </div>
+                    <h3>6.3 实际变换公式</h3>
+                    <p>对于源图像中的每个像素点 <span class="inline-math" id="source-pixel"></span>，其在目标图像中的位置为：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="pixel-transform"></div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>定理 5.1 (SVD与广义逆)</h3>
-                        <div class="theorem-box">
-                            <p>设矩阵 <span class="inline-math" id="A-svd-form"></span> 为 <span class="inline-math" id="matrix-A"></span> 的奇异值分解，其中 <span class="inline-math" id="sigma-diagonal"></span>，则：</p>
-                            <div class="math-block">
-                                <div class="katex-display" id="svd-pseudoinverse"></div>
-                            </div>
-                            <p>其中 <span class="inline-math" id="sigma-plus"></span> 通过将 <span class="inline-math" id="sigma-matrix"></span> 中的非零奇异值取倒数得到。</p>
-
-                            <p><strong>几何意义：</strong>SVD分解将矩阵分解为三个简单变换的复合：旋转→缩放→旋转，广义逆则是这个过程的"最佳逆过程"。</p>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>5.1 广义逆的基本性质</h3>
-                        <div class="properties-list">
-                            <div class="property-item">
-                                <strong>唯一性：</strong>Moore-Penrose广义逆是唯一的
-                            </div>
-                            <div class="property-item">
-                                <strong>对称性：</strong><span class="inline-math" id="pseudoinverse-symmetry"></span>
-                            </div>
-                            <div class="property-item">
-                                <strong>幂等性：</strong><span class="inline-math" id="pseudoinverse-idempotent"></span>
-                            </div>
-                            <div class="property-item">
-                                <strong>范数性质：</strong><span class="inline-math" id="pseudoinverse-norm"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>5.2 齐次线性方程组的最小范数解</h3>
-                        <p>考虑齐次线性方程组 <span class="inline-math" id="homogeneous-eq"></span>，其最小范数解为：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="min-norm-solution"></div>
-                        </div>
-
-                        <p>其中 <span class="inline-math" id="v-min"></span> 是 <span class="inline-math" id="ATA-matrix"></span> 的最小特征值对应的特征向量。</p>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>引理 5.1 (最小特征值与零空间)</h3>
-                        <div class="lemma-box">
-                            <p>设 <span class="inline-math" id="A-rank"></span>，则：</p>
-                            <ol>
-                                <li><span class="inline-math" id="ATA-eigenvalues"></span> 有 <span class="inline-math" id="r-positive"></span> 个正特征值和 <span class="inline-math" id="9-r-zero"></span> 个零特征值</li>
-                                <li>零特征值对应的特征空间即为 <span class="inline-math" id="A-nullspace"></span></li>
-                                <li>当 <span class="inline-math" id="rank-8"></span> 时，零空间为一维，最小范数解唯一确定（除了符号）</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>5.3 数值计算考虑</h3>
-                        <div class="numerical-considerations">
-                            <div class="consideration-item">
-                                <h4>条件数</h4>
-                                <p>矩阵 <span class="inline-math" id="condition-number"></span> 的条件数为 <span class="inline-math" id="cond-formula"></span></p>
-                            </div>
-                            <div class="consideration-item">
-                                <h4>数值稳定性</h4>
-                                <p>当 <span class="inline-math" id="sigma-min"></span> 很小时，解可能不稳定，需要正则化处理</p>
-                            </div>
-                            <div class="consideration-item">
-                                <h4>截断SVD</h4>
-                                <p>实际计算中常使用截断SVD：<span class="inline-math" id="truncated-svd"></span></p>
-                            </div>
-                        </div>
-                    </div>
+                    <h3>6.4 实现中的技术细节</h3>
+                    <ul>
+                        <li><strong>逆向映射</strong>：为避免空洞，我们从目标像素反向计算源像素位置</li>
+                        <li><strong>双线性插值</strong>：处理非整数坐标的像素值</li>
+                        <li><strong>边界检查</strong>：确保变换后的像素在有效范围内</li>
+                        <li><strong>透明度处理</strong>：支持带透明通道的图像嵌入</li>
+                    </ul>
                 </section>
 
-                <!-- 6. 单应矩阵的求解方法 -->
-                <section id="solution-method" class="theory-section">
-                    <h2 class="section-title">6. 单应矩阵的求解方法</h2>
+                <!-- 7. 其他应用领域 -->
+                <section class="theory-section">
+                    <h2 class="section-title">7. 单应性变换的其他应用</h2>
 
-                    <div class="content-block">
-                        <h3>6.1 直接线性变换(DLT)算法</h3>
-                        <p>DLT算法是求解单应矩阵的标准方法，其核心思想是将非线性问题线性化。</p>
+                    <p>单应性变换作为计算机视觉的基础工具，在许多领域都有重要应用：</p>
 
-                        <div class="algorithm-box">
-                            <h4>算法 6.1 (DLT算法)</h4>
-                            <p><strong>输入：</strong>对应点对 <span class="inline-math" id="input-points"></span></p>
-                            <p><strong>输出：</strong>单应矩阵 <span class="inline-math" id="output-H"></span></p>
-
-                            <ol class="algorithm-steps">
-                                <li>构造系数矩阵 <span class="inline-math" id="A-construction"></span></li>
-                                <li>求解 <span class="inline-math" id="min-problem"></span></li>
-                                <li>将解向量重构为 3×3 矩阵</li>
-                                <li>归一化使 <span class="inline-math" id="h33-normalize"></span></li>
-                            </ol>
+                    <div class="application-grid">
+                        <div class="application-item">
+                            <h4>🚗 汽车环视系统</h4>
+                            <p>将多个摄像头的图像拼接成鸟瞰图，帮助驾驶员了解车辆周围环境。</p>
+                        </div>
+                        <div class="application-item">
+                            <h4>📱 增强现实(AR)</h4>
+                            <p>将虚拟物体准确地叠加到现实场景中，实现虚实融合的视觉效果。</p>
+                        </div>
+                        <div class="application-item">
+                            <h4>📷 图像拼接</h4>
+                            <p>将多张有重叠区域的照片拼接成全景图像。</p>
+                        </div>
+                        <div class="application-item">
+                            <h4>🏢 建筑测量</h4>
+                            <p>从倾斜拍摄的建筑照片中恢复真实的几何尺寸。</p>
+                        </div>
+                        <div class="application-item">
+                            <h4>🎮 游戏开发</h4>
+                            <p>实现3D场景到2D屏幕的透视投影变换。</p>
+                        </div>
+                        <div class="application-item">
+                            <h4>🔍 文档扫描</h4>
+                            <p>校正倾斜拍摄的文档，恢复矩形的文档形状。</p>
                         </div>
                     </div>
 
-                    <div class="content-block">
-                        <h3>6.2 最小二乘解的计算</h3>
-                        <p>齐次线性方程组 <span class="inline-math" id="Ah-zero"></span> 的最小范数解可通过以下方法计算：</p>
-
-                        <div class="method-comparison">
-                            <div class="method-item">
-                                <h4>方法1：特征值分解</h4>
-                                <div class="math-block">
-                                    <div class="katex-display" id="eigenvalue-method"></div>
-                                </div>
-                                <p>计算 <span class="inline-math" id="ATA-eigen"></span> 的最小特征值对应的特征向量</p>
-                            </div>
-
-                            <div class="method-item">
-                                <h4>方法2：奇异值分解</h4>
-                                <div class="math-block">
-                                    <div class="katex-display" id="svd-method"></div>
-                                </div>
-                                <p>计算 <span class="inline-math" id="A-svd"></span>，解为 <span class="inline-math" id="V-last-column"></span></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>6.3 数值稳定性分析</h3>
-                        <div class="stability-analysis">
-                            <div class="stability-item">
-                                <h4>条件数的影响</h4>
-                                <p>当 <span class="inline-math" id="cond-A"></span> 很大时，解的精度下降。通常要求 <span class="inline-math" id="cond-threshold"></span>。</p>
-                            </div>
-
-                            <div class="stability-item">
-                                <h4>坐标归一化</h4>
-                                <p>将点坐标归一化到 <span class="inline-math" id="normalize-range"></span> 可显著改善条件数：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="normalization-transform"></div>
-                                </div>
-                            </div>
-
-                            <div class="stability-item">
-                                <h4>正则化技术</h4>
-                                <p>当系统接近奇异时，可使用Tikhonov正则化：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="tikhonov-regularization"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>6.4 超定系统的处理</h3>
-                        <p>当有超过4对点时 <span class="inline-math" id="n-greater-4"></span>，系统变为超定，此时求解最小二乘解：</p>
-
-                        <div class="math-block">
-                            <div class="katex-display" id="overdetermined-solution"></div>
-                        </div>
-
-                        <p>这种情况下，解的鲁棒性更好，但需要考虑异常点的影响。</p>
-
-                        <div class="robust-methods">
-                            <div class="robust-item">
-                                <h4>RANSAC算法</h4>
-                                <p>随机采样一致性算法，用于处理含有异常点的数据</p>
-                            </div>
-                            <div class="robust-item">
-                                <h4>加权最小二乘</h4>
-                                <p>根据点的可靠性分配不同权重</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h3>7.1 技术发展趋势</h3>
+                    <p>随着深度学习的发展，单应性变换的估计也在不断改进：</p>
+                    <ul>
+                        <li><strong>深度学习方法</strong>：使用神经网络直接预测单应矩阵</li>
+                        <li><strong>实时处理</strong>：GPU加速使得实时单应变换成为可能</li>
+                        <li><strong>鲁棒性提升</strong>：结合RANSAC等算法处理噪声和异常值</li>
+                        <li><strong>多视图几何</strong>：扩展到多个视角的同时处理</li>
+                    </ul>
                 </section>
 
-                <!-- 7. 图像嵌入的完整数学过程 -->
-                <section id="application-example" class="theory-section">
-                    <h2 class="section-title">7. 图像嵌入的完整数学过程</h2>
+                <!-- 总结 -->
+                <section class="theory-section">
+                    <h2 class="section-title">总结</h2>
 
-                    <div class="content-block">
-                        <h3>7.1 问题设定</h3>
-                        <p>现在我们将前面的理论应用到具体的图像嵌入问题中。</p>
-
-                        <div class="problem-setup">
-                            <div class="setup-item">
-                                <h4>给定条件</h4>
-                                <ul>
-                                    <li>源图像：尺寸为 <span class="inline-math" id="source-size"></span> 的矩形图像</li>
-                                    <li>目标区域：背景图像中用户指定的四边形区域</li>
-                                    <li>对应点：<span class="inline-math" id="correspondence-points"></span></li>
-                                </ul>
-                            </div>
-                            <div class="setup-item">
-                                <h4>求解目标</h4>
-                                <p>找到单应矩阵 <span class="inline-math" id="target-H"></span>，使得源图像能够正确嵌入到目标区域</p>
-                            </div>
-                        </div>
+                    <div class="highlight-box">
+                        <h4>🎯 核心要点回顾</h4>
+                        <ul>
+                            <li><strong>问题本质</strong>：将矩形图像变换为任意四边形</li>
+                            <li><strong>数学工具</strong>：单应性变换提供了完美的解决方案</li>
+                            <li><strong>求解方法</strong>：通过SVD求解超定线性方程组</li>
+                            <li><strong>实际应用</strong>：从图像嵌入到AR，应用广泛</li>
+                        </ul>
                     </div>
 
-                    <div class="content-block">
-                        <h3>7.2 具体计算步骤</h3>
+                    <p>通过理解单应性变换的数学原理，我们不仅能够实现精确的图像嵌入，还为进一步探索计算机视觉的其他领域奠定了坚实的理论基础。</p>
 
-                        <div class="calculation-steps">
-                            <div class="calc-step">
-                                <h4>步骤1：建立对应关系</h4>
-                                <p>源图像角点（按逆时针顺序）：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="source-corners-specific"></div>
-                                </div>
-                                <p>目标区域角点（用户点击）：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="target-corners-specific"></div>
-                                </div>
-                            </div>
-
-                            <div class="calc-step">
-                                <h4>步骤2：构造线性方程组</h4>
-                                <p>对于每对对应点 <span class="inline-math" id="point-pair-i"></span>，建立约束方程：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="constraint-equations"></div>
-                                </div>
-                                <p>四对点共产生8个线性方程，系数矩阵 <span class="inline-math" id="A-8x9"></span> 为：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="coefficient-matrix"></div>
-                                </div>
-                            </div>
-
-                            <div class="calc-step">
-                                <h4>步骤3：求解最小范数解</h4>
-                                <p>计算 <span class="inline-math" id="ATA-computation"></span> 的特征值分解：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="eigendecomposition"></div>
-                                </div>
-                                <p>最小特征值 <span class="inline-math" id="lambda-min"></span> 对应的特征向量即为所求解 <span class="inline-math" id="h-solution"></span>。</p>
-                            </div>
-
-                            <div class="calc-step">
-                                <h4>步骤4：重构单应矩阵</h4>
-                                <p>将解向量重新排列为3×3矩阵：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="H-reconstruction"></div>
-                                </div>
-                                <p>归一化使 <span class="inline-math" id="h33-one"></span>（假设 <span class="inline-math" id="h33-nonzero"></span>）。</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>7.3 图像变换的实现</h3>
-                        <p>得到单应矩阵后，对源图像的每个像素进行变换：</p>
-
-                        <div class="transformation-process">
-                            <div class="transform-step">
-                                <h4>正向变换</h4>
-                                <p>对于源图像中的点 <span class="inline-math" id="source-pixel"></span>：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="forward-transform"></div>
-                                </div>
-                                <p>得到目标图像中的对应位置 <span class="inline-math" id="target-position"></span>。</p>
-                            </div>
-
-                            <div class="transform-step">
-                                <h4>插值处理</h4>
-                                <p>由于变换后的坐标通常不是整数，使用双线性插值：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="bilinear-interpolation"></div>
-                                </div>
-                                <p>其中 <span class="inline-math" id="interpolation-weights"></span> 为插值权重。</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>7.4 算法复杂度分析</h3>
-                        <div class="complexity-analysis">
-                            <div class="complexity-item">
-                                <h4>时间复杂度</h4>
-                                <ul>
-                                    <li>构造系数矩阵：<span class="inline-math" id="matrix-construction-complexity"></span></li>
-                                    <li>特征值分解：<span class="inline-math" id="eigen-complexity"></span></li>
-                                    <li>图像变换：<span class="inline-math" id="transform-complexity"></span></li>
-                                    <li>总体复杂度：<span class="inline-math" id="total-complexity"></span></li>
-                                </ul>
-                            </div>
-                            <div class="complexity-item">
-                                <h4>空间复杂度</h4>
-                                <ul>
-                                    <li>系数矩阵存储：<span class="inline-math" id="matrix-space"></span></li>
-                                    <li>图像数据：<span class="inline-math" id="image-space"></span></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>7.5 实际应用中的考虑</h3>
-                        <div class="practical-considerations">
-                            <div class="consideration-item">
-                                <h4>数值稳定性</h4>
-                                <p>在实际应用中，需要检查系数矩阵的条件数，当 <span class="inline-math" id="condition-check"></span> 时，考虑使用正则化方法。</p>
-                            </div>
-                            <div class="consideration-item">
-                                <h4>边界处理</h4>
-                                <p>变换后的像素可能超出目标图像边界，需要进行裁剪或边界扩展处理。</p>
-                            </div>
-                            <div class="consideration-item">
-                                <h4>质量评估</h4>
-                                <p>可通过重投影误差评估变换质量：</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="reprojection-error"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-block">
-                        <h3>7.6 单应矩阵的其他重要应用</h3>
-                        <p>除了图像嵌入，单应性变换在现代科技中有着广泛的应用。以下是一些重要的应用领域：</p>
-
-                        <div class="applications-grid">
-                            <div class="application-item">
-                                <h4>🚗 汽车环视系统</h4>
-                                <p><strong>应用原理：</strong>将车辆四周的鱼眼摄像头图像投影到统一的俯视平面上，形成360°环视图像。</p>
-                                <p><strong>技术要点：</strong>每个摄像头的图像通过单应变换映射到地面平面，然后拼接成完整的俯视图。</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="surround-view-transform"></div>
-                                </div>
-                            </div>
-
-                            <div class="application-item">
-                                <h4>📱 文档扫描与矫正</h4>
-                                <p><strong>应用原理：</strong>自动检测文档的四个角点，通过单应变换将倾斜的文档图像矫正为标准的矩形。</p>
-                                <p><strong>技术要点：</strong>边缘检测→角点提取→单应矩阵计算→透视矫正。广泛应用于手机扫描APP。</p>
-                            </div>
-
-                            <div class="application-item">
-                                <h4>🏟️ 体育赛事分析</h4>
-                                <p><strong>应用原理：</strong>将不同角度拍摄的比赛画面统一投影到标准场地平面，用于战术分析和轨迹追踪。</p>
-                                <p><strong>技术要点：</strong>利用场地标线作为参考点，建立摄像机视角与标准场地的单应关系。</p>
-                            </div>
-
-                            <div class="application-item">
-                                <h4>🏭 工业视觉检测</h4>
-                                <p><strong>应用原理：</strong>将传送带上不同位置的产品图像统一变换到标准视角，便于缺陷检测和质量控制。</p>
-                                <p><strong>技术要点：</strong>标定板定位→单应矩阵计算→产品图像标准化→缺陷识别。</p>
-                            </div>
-
-                            <div class="application-item">
-                                <h4>🎮 增强现实(AR)</h4>
-                                <p><strong>应用原理：</strong>将虚拟物体准确叠加到真实场景的平面上，如桌面、墙面等。</p>
-                                <p><strong>技术要点：</strong>平面检测→特征点匹配→单应矩阵估计→虚拟物体渲染。</p>
-                                <div class="math-block">
-                                    <div class="katex-display" id="ar-projection"></div>
-                                </div>
-                            </div>
-
-                            <div class="application-item">
-                                <h4>🛰️ 遥感图像配准</h4>
-                                <p><strong>应用原理：</strong>将不同时间、不同传感器获取的遥感图像进行几何配准，用于变化检测。</p>
-                                <p><strong>技术要点：</strong>地面控制点选择→单应变换估计→图像重采样→配准精度评估。</p>
-                            </div>
-                        </div>
-
-                        <div class="application-summary">
-                            <h4>🔬 技术发展趋势</h4>
-                            <ul>
-                                <li><strong>实时性提升：</strong>GPU加速和优化算法使单应变换能够实时处理4K视频</li>
-                                <li><strong>鲁棒性增强：</strong>结合深度学习的特征点检测，提高复杂环境下的稳定性</li>
-                                <li><strong>精度优化：</strong>亚像素级的角点检测和非线性优化，达到更高的变换精度</li>
-                                <li><strong>多模态融合：</strong>结合RGB、深度、红外等多种传感器数据的联合标定</li>
-                            </ul>
-                        </div>
-
-                        <p class="conclusion">单应性变换作为计算机视觉的基础工具，在人工智能、自动驾驶、工业4.0等领域发挥着越来越重要的作用。掌握其数学原理和计算方法，对于理解现代视觉系统具有重要意义。</p>
-                    </div>
+                    <p>这个看似简单的"将图像放到四边形中"的问题，实际上涉及了线性代数、数值分析、计算几何等多个数学分支，体现了数学在解决实际问题中的强大威力。</p>
                 </section>
             </div>
         </div>
     </div>
 
-    <!-- 同步加载KaTeX确保可用性 -->
+    <!-- 优化的脚本加载 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
-    <script src="theory.js"></script>
+    <script src="theory-final.js"></script>
 </body>
 </html>
