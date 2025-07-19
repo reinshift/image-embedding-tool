@@ -81,7 +81,6 @@ body {
     width: 50px;
     height: 50px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
 }
 
 .app-title {
@@ -259,31 +258,7 @@ body {
     font-weight: 500;
 }
 
-/* Logo上传 */
-.logo-upload-section {
-    text-align: center;
-    padding-top: 1.5rem;
-    border-top: 1px solid #eee;
-}
 
-.logo-upload-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: var(--secondary-color);
-    color: #666;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.logo-upload-btn:hover {
-    background-color: #e9ecef;
-    color: var(--primary-color);
-}
 
 /* 背景装饰 */
 .background-decoration {

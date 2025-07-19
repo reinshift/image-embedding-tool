@@ -195,18 +195,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function handleImageClick(event) {
         if (points.length >= 4) return;
-        
+
         const rect = selectionImage.getBoundingClientRect();
-        const scaleX = selectionImage.naturalWidth / selectionImage.offsetWidth;
-        const scaleY = selectionImage.naturalHeight / selectionImage.offsetHeight;
-        
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
-        
+
+        // 计算基础缩放比例（图像自然尺寸与显示尺寸的比例）
+        const baseScaleX = selectionImage.naturalWidth / selectionImage.offsetWidth;
+        const baseScaleY = selectionImage.naturalHeight / selectionImage.offsetHeight;
+
+        // 考虑用户缩放因子，计算鼠标点击位置相对于未缩放图像的坐标
+        const clickX = (event.clientX - rect.left) / currentZoom;
+        const clickY = (event.clientY - rect.top) / currentZoom;
+
+        // 转换为图像的实际像素坐标
+        const x = clickX * baseScaleX;
+        const y = clickY * baseScaleY;
+
         points.push([x, y]);
         updatePointsDisplay();
         drawPoints();
-        
+
         if (points.length === 4) {
             processBtn.disabled = false;
         }
