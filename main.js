@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let canvasContext = null;
     let backgroundUploaded = false;
     let overlayUploaded = false;
+
+    // 将状态变量暴露给全局，以便correction.js访问
+    window.backgroundUploaded = backgroundUploaded;
+    window.overlayUploaded = overlayUploaded;
     
     // 图像缩放状态
     let currentZoom = 1;
@@ -47,10 +51,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化
     init();
-    
+
     function init() {
         setupEventListeners();
         setupCanvas();
+
+        // 监听模式切换事件
+        window.addEventListener('modeChanged', handleModeChange);
+    }
+
+    function handleModeChange() {
+        // 重置本地状态变量
+        backgroundImg = null;
+        overlayImg = null;
+        points = [];
+        backgroundUploaded = false;
+        overlayUploaded = false;
+
+        // 更新全局状态
+        window.backgroundUploaded = false;
+        window.overlayUploaded = false;
+
+        // 重置文件输入
+        if (backgroundInput) backgroundInput.value = '';
+        if (overlayInput) overlayInput.value = '';
+
+        // 更新按钮状态
+        updateNextButton();
     }
     
     function setupEventListeners() {
@@ -128,14 +155,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     backgroundPreview.classList.remove('d-none');
                     backgroundUploadArea.classList.add('has-image');
                     backgroundUploaded = true;
+                    window.backgroundUploaded = true; // 更新全局状态
                 } else {
                     overlayImg = img;
                     overlayPreview.src = e.target.result;
                     overlayPreview.classList.remove('d-none');
                     overlayUploadArea.classList.add('has-image');
                     overlayUploaded = true;
+                    window.overlayUploaded = true; // 更新全局状态
                 }
-                
+
                 updateNextButton();
             };
             img.src = e.target.result;
@@ -144,7 +173,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateNextButton() {
-        nextStepBtn.disabled = !(backgroundUploaded && overlayUploaded);
+        // 检查当前模式
+        const currentMode = window.imageCorrection ? window.imageCorrection.getCurrentMode() : 'embed';
+
+        if (currentMode === 'embed') {
+            nextStepBtn.disabled = !(backgroundUploaded && overlayUploaded);
+        } else {
+            // 图像矫正模式
+            const correctionUploaded = window.imageCorrection ? window.imageCorrection.isCorrectionImageUploaded() : false;
+            nextStepBtn.disabled = !correctionUploaded;
+        }
     }
     
     function goToStep1() {
@@ -154,22 +192,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function goToStep2() {
-        if (!backgroundUploaded || !overlayUploaded) {
-            alert('请先上传两张图片');
-            return;
+        const currentMode = window.imageCorrection ? window.imageCorrection.getCurrentMode() : 'embed';
+
+        if (currentMode === 'embed') {
+            if (!backgroundUploaded || !overlayUploaded) {
+                alert('请先上传两张图片');
+                return;
+            }
+            // 设置选择图像为背景图像
+            selectionImage.src = backgroundImg.src;
+        } else {
+            // 图像矫正模式
+            const correctionUploaded = window.imageCorrection ? window.imageCorrection.isCorrectionImageUploaded() : false;
+            if (!correctionUploaded) {
+                alert('请先上传需要矫正的图片');
+                return;
+            }
+            // 设置选择图像为待矫正图像
+            const correctionImage = window.imageCorrection.getCorrectionImage();
+            selectionImage.src = correctionImage.src;
         }
-        
+
         step1.classList.add('d-none');
         step2.classList.remove('d-none');
         step3.classList.add('d-none');
-        
-        // 设置选择图像
-        selectionImage.src = backgroundImg.src;
+
         selectionImage.onload = () => {
             setupCanvas();
             resetZoom();
         };
-        
+
         // 重置点选择
         clearPoints();
     }
@@ -296,21 +348,37 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('请选择4个点');
             return;
         }
-        
+
         showLoading(true);
-        
+
         try {
-            // 使用单应性处理器进行图像嵌入
-            const resultCanvas = window.homographyProcessor.embedImage(
-                backgroundImg, 
-                overlayImg, 
-                points
-            );
-            
+            const currentMode = window.imageCorrection ? window.imageCorrection.getCurrentMode() : 'embed';
+            let resultCanvas;
+
+            if (currentMode === 'embed') {
+                // 图像嵌入模式
+                resultCanvas = window.homographyProcessor.embedImage(
+                    backgroundImg,
+                    overlayImg,
+                    points
+                );
+            } else {
+                // 图像矫正模式
+                const correctionImage = window.imageCorrection.getCorrectionImage();
+                resultCanvas = window.homographyProcessor.correctImage(
+                    correctionImage,
+                    points
+                );
+            }
+
             // 显示结果
             resultImage.src = resultCanvas.toDataURL('image/jpeg', 0.9);
             downloadBtn.href = resultCanvas.toDataURL('image/jpeg', 0.9);
-            
+
+            // 更新下载文件名
+            const fileName = currentMode === 'embed' ? 'image_embed_result.jpg' : 'image_correction_result.jpg';
+            downloadBtn.download = fileName;
+
             goToStep3();
         } catch (error) {
             console.error('处理图像时出错:', error);

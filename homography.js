@@ -208,6 +208,113 @@ class HomographyProcessor {
     }
 
     /**
+     * 图像矫正功能
+     * @param {HTMLImageElement} sourceImg - 需要矫正的图像
+     * @param {Array} srcPoints - 源图像中需要矫正的四个点（倾斜的四边形）
+     * @returns {HTMLCanvasElement} 矫正后的画布
+     */
+    correctImage(sourceImg, srcPoints) {
+        // 计算矫正后的矩形尺寸
+        const correctedSize = this.calculateCorrectedSize(srcPoints);
+
+        // 设置画布大小为矫正后的尺寸
+        this.canvas.width = correctedSize.width;
+        this.canvas.height = correctedSize.height;
+
+        // 清空画布
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 定义目标矩形的四个角点（标准矩形）
+        const dstPoints = [
+            [0, 0],                                    // 左上
+            [correctedSize.width, 0],                  // 右上
+            [correctedSize.width, correctedSize.height], // 右下
+            [0, correctedSize.height]                  // 左下
+        ];
+
+        // 计算从倾斜四边形到标准矩形的单应性矩阵
+        const H = this.calculateHomography(srcPoints, dstPoints);
+
+        // 应用矫正变换
+        this.applyCorrectionTransform(sourceImg, H, srcPoints, dstPoints);
+
+        return this.canvas;
+    }
+
+    /**
+     * 计算矫正后的矩形尺寸
+     */
+    calculateCorrectedSize(srcPoints) {
+        // 计算四边形的边长
+        const topWidth = this.distance(srcPoints[0], srcPoints[1]);
+        const bottomWidth = this.distance(srcPoints[3], srcPoints[2]);
+        const leftHeight = this.distance(srcPoints[0], srcPoints[3]);
+        const rightHeight = this.distance(srcPoints[1], srcPoints[2]);
+
+        // 使用平均值作为矫正后的尺寸
+        const width = Math.round((topWidth + bottomWidth) / 2);
+        const height = Math.round((leftHeight + rightHeight) / 2);
+
+        return { width, height };
+    }
+
+    /**
+     * 计算两点间距离
+     */
+    distance(p1, p2) {
+        const dx = p2[0] - p1[0];
+        const dy = p2[1] - p1[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * 应用矫正变换
+     */
+    applyCorrectionTransform(sourceImg, H, srcPoints, dstPoints) {
+        // 创建源图像的画布
+        const sourceCanvas = document.createElement('canvas');
+        const sourceCtx = sourceCanvas.getContext('2d');
+        sourceCanvas.width = sourceImg.width;
+        sourceCanvas.height = sourceImg.height;
+        sourceCtx.drawImage(sourceImg, 0, 0);
+        const sourceData = sourceCtx.getImageData(0, 0, sourceImg.width, sourceImg.height);
+
+        // 计算逆变换矩阵（从目标矩形映射回源四边形）
+        const HInv = this.invertMatrix3x3(H);
+
+        // 创建输出图像数据
+        const outputData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
+
+        // 对目标矩形的每个像素进行反向映射
+        for (let y = 0; y < this.canvas.height; y++) {
+            for (let x = 0; x < this.canvas.width; x++) {
+                // 反向映射到源图像
+                const [srcX, srcY] = this.transformPoint([x, y], HInv);
+
+                // 双线性插值获取像素值
+                const pixel = this.bilinearInterpolation(sourceData, srcX, srcY);
+                if (pixel) {
+                    const idx = (y * this.canvas.width + x) * 4;
+                    outputData.data[idx] = pixel[0];     // R
+                    outputData.data[idx + 1] = pixel[1]; // G
+                    outputData.data[idx + 2] = pixel[2]; // B
+                    outputData.data[idx + 3] = pixel[3]; // A
+                } else {
+                    // 如果超出边界，设置为白色
+                    const idx = (y * this.canvas.width + x) * 4;
+                    outputData.data[idx] = 255;     // R
+                    outputData.data[idx + 1] = 255; // G
+                    outputData.data[idx + 2] = 255; // B
+                    outputData.data[idx + 3] = 255; // A
+                }
+            }
+        }
+
+        // 将处理后的图像数据绘制到画布
+        this.ctx.putImageData(outputData, 0, 0);
+    }
+
+    /**
      * 应用透视变换
      */
     applyPerspectiveTransform(overlayImg, H, dstPoints) {
