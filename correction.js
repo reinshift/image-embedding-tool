@@ -111,12 +111,17 @@ class ImageCorrection {
     }
     
     setupExampleImage() {
-        const exampleArea = document.getElementById('example-area');
-        if (exampleArea) {
-            exampleArea.addEventListener('click', () => {
-                this.useExampleImage();
+        const exampleItems = document.querySelectorAll('.example-item');
+        exampleItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const imagePath = item.getAttribute('data-image');
+                this.useExampleImage(imagePath);
+
+                // 更新选中状态
+                exampleItems.forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
             });
-        }
+        });
     }
     
     setupDragAndDrop(area, callback) {
@@ -160,15 +165,15 @@ class ImageCorrection {
         reader.readAsDataURL(file);
     }
     
-    useExampleImage() {
+    useExampleImage(imagePath = 'IDcard.jpg') {
         const img = new Image();
         img.onload = () => {
             this.correctImage = img;
             this.correctUploaded = true;
-            this.showCorrectionPreview('IDcard.jpg');
+            this.showCorrectionPreview(imagePath);
             this.updateNextButton();
         };
-        img.src = 'IDcard.jpg';
+        img.src = imagePath;
     }
     
     showCorrectionPreview(src) {
@@ -229,6 +234,10 @@ class ImageCorrection {
         // 重置全局状态
         window.backgroundUploaded = false;
         window.overlayUploaded = false;
+
+        // 重置示例图片选中状态
+        const exampleItems = document.querySelectorAll('.example-item');
+        exampleItems.forEach(item => item.classList.remove('selected'));
 
         // 重置步骤
         this.goToStep1();

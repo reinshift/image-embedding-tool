@@ -1,3 +1,5 @@
 *.jpg
 !IDcard.jpg
+!Artwork.jpg
+!Subway.jpg
 proof.md

@@ -356,6 +356,79 @@
             transform: scale(1.02);
         }
 
+        /* 示例图片文件夹样式 */
+        .examples-folder {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            background-color: var(--secondary-color);
+            height: 250px;
+            overflow-y: auto;
+        }
+
+        .folder-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .folder-icon {
+            margin-right: 0.5rem;
+            color: #fbbf24;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .example-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: white;
+            border: 1px solid transparent;
+        }
+
+        .example-item:hover {
+            background-color: rgba(36, 211, 122, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .example-item.selected {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .example-thumbnail {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .example-item.selected .example-thumbnail {
+            border-color: white;
+        }
+
+        .example-name {
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
         /* 响应式调整 */
         @media (max-width: 768px) {
             .container {
@@ -395,6 +468,21 @@
             .d-flex.justify-content-between {
                 flex-direction: column;
                 gap: 1rem;
+            }
+
+            .examples-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 0.5rem;
+            }
+
+            .example-thumbnail {
+                width: 50px;
+                height: 38px;
+            }
+
+            .examples-folder {
+                height: 200px;
+                padding: 1rem;
             }
         }
     </style>
@@ -503,10 +591,29 @@
                     </div>
 
                     <div class="col-md-6 mb-4">
-                        <div class="upload-area" id="example-area" style="cursor: pointer;">
-                            <img src="IDcard.jpg" class="img-preview" alt="示例图像" style="display: block;">
+                        <div class="examples-folder">
+                            <div class="folder-header">
+                                <svg class="folder-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                                </svg>
+                                示例图像
+                            </div>
+                            <div class="examples-grid">
+                                <div class="example-item" data-image="IDcard.jpg">
+                                    <img src="IDcard.jpg" class="example-thumbnail" alt="身份证">
+                                    <div class="example-name">身份证</div>
+                                </div>
+                                <div class="example-item" data-image="Artwork.jpg">
+                                    <img src="Artwork.jpg" class="example-thumbnail" alt="艺术作品">
+                                    <div class="example-name">艺术作品</div>
+                                </div>
+                                <div class="example-item" data-image="Subway.jpg">
+                                    <img src="Subway.jpg" class="example-thumbnail" alt="地铁图">
+                                    <div class="example-name">地铁图</div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="upload-label">示例图像 (点击使用)</p>
+                        <p class="upload-label">示例图像 (点击选择)</p>
                     </div>
                 </div>
 
