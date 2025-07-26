@@ -1,11 +1,17 @@
 // 数学表达式定义
 const mathExpressions = {
-    // 第2章 - 从线性变换到单应矩阵
+    // 第2章 - 线性变换与单应变换的区别
     'rotation-matrix': `
         \\begin{bmatrix}
         \\cos\\theta & -\\sin\\theta \\\\
         \\sin\\theta & \\cos\\theta
         \\end{bmatrix}
+    `,
+    'nonlinear-homography': `
+        \\begin{cases}
+        x' = \\frac{h_{11}x + h_{12}y + h_{13}}{h_{31}x + h_{32}y + h_{33}} \\\\
+        y' = \\frac{h_{21}x + h_{22}y + h_{23}}{h_{31}x + h_{32}y + h_{33}}
+        \\end{cases}
     `,
     'homography-matrix': `
         \\mathbf{H} = \\begin{bmatrix}

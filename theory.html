@@ -218,7 +218,7 @@
                     <h3>1.1 图像嵌入</h3>
                     <p>你可能使用过全能扫描王、白描等软件，它们能够帮你把拍歪了的文件、身份证照片进行矫正；你可能使用过现代的汽车倒车影像，就好像有一个在天上的摄像头往下拍一样...你是否想过，它们是如何实现的呢？</p>
 
-                    <p>其实这些看似神奇的功能，我们在高代课上学习过——<strong>线性变换</strong>。线性变换分成好几种，有旋转、缩放等，这些都是基础的线性变换，能描述图形在平面内的许多运动。而上面的例子里，是视角发生了改变，实际上是在处理一个平面（比如纸张、地面）在不同视角下的投影图像之间的关系。因此我们需要一种能够精确描述一个平面到另一个平面的透视映射（Perspective Mapping）的工具，而这就是本文要介绍的"<strong>单应变换</strong>"。</p>
+                    <p>其实这些看似神奇的功能，背后都有数学原理支撑。我们在高代课上学过各种<strong>几何变换</strong>，比如旋转、缩放、平移等，这些变换能描述图形在平面内的许多运动。但上面的例子有所不同——是视角发生了改变，实际上是在处理一个平面（比如纸张、地面）在不同视角下的投影图像之间的关系。因此我们需要一种能够精确描述一个平面到另一个平面的透视映射（Perspective Mapping）的工具，而这就是本文要介绍的"<strong>单应变换</strong>"。</p>
 
                     <div class="highlight-box">
                         <h4>🎯 核心问题</h4>
@@ -228,7 +228,7 @@
                     <p>你正在浏览的这个图像嵌入工具，就是本文要讲的关于单应变换的一个案例。图像嵌入不是简单的图片的叠加：比如说你是一个商家，正在P图想把你产品的广告打到某个建筑物照片上，但照片存在透视（近大远小），直接把广告图贴上去，得到的照片一眼看出来是P的；但如果使用一点变换，让这个广告图的透视关系符合这张建筑照片的透视关系，看上去就会自然很多，正如你在本工具尝试的那样。这里也用到了单应变换，下面我们以这个工具为例，从单应变换开始介绍实现的过程。</p>
 
                     <h3>1.2 单应变换的定义</h3>
-                    <p>单应变换（Homography），也叫透视变换、射影变换，是一种可逆映射，是关于齐次三维坐标的一种线性变换。它能够描述一个平面在不同视角下的投影关系。</p>
+                    <p>单应变换（Homography），也叫透视变换、射影变换，是一种可逆映射，能够描述一个平面在不同视角下的投影关系。虽然它本质上不是线性变换，但通过引入齐次坐标系，我们可以用矩阵运算来处理它。</p>
 
                     <div class="highlight-box">
                         <h4>🔍 直观理解</h4>
@@ -236,33 +236,65 @@
                     </div>
                 </section>
 
-                <!-- 2. 从线性变换到单应矩阵 -->
+                <!-- 2. 线性变换与单应变换的区别 -->
                 <section class="theory-section">
-                    <h2 class="section-title">2. 从线性变换到单应矩阵</h2>
+                    <h2 class="section-title">2. 线性变换与单应变换的区别</h2>
 
-                    <h3>2.1 高代中的线性变换</h3>
-                    <p>还记得高代课上学过的线性变换吗？旋转、缩放、剪切等<strong>变换</strong>都可以用<strong>矩阵</strong>来表示。比如一个2D的旋转变换：</p>
+                    <h3>2.1 线性变换的定义与性质</h3>
+                    <p>还记得高代课上学过的线性变换吗？一个变换 <span class="inline-math">T: V \rightarrow W</span> 是线性的，当且仅当它满足下面两个条件：</p>
+
+                    <div class="highlight-box">
+                        <h4>📐 线性变换的性质</h4>
+                        <ul>
+                            <li><strong>可加性</strong>：<span class="inline-math">T(u + v) = T(u) + T(v)</span> 对所有 <span class="inline-math">u, v</span> 属于 <span class="inline-math">V</span> 成立</li>
+                            <li><strong>齐次性</strong>：<span class="inline-math">T(cu) = c \cdot T(u)</span> 对所有标量 <span class="inline-math">c</span> 和所有 <span class="inline-math">u</span> 属于 <span class="inline-math">V</span> 成立</li>
+                        </ul>
+                    </div>
+
+                    <p>在2D空间中，线性变换可以用一个 <span class="inline-math">2 \times 2</span> 矩阵表示。比如旋转变换：</p>
                     <div class="math-block">
                         <div class="katex-display" id="rotation-matrix"></div>
                     </div>
 
-                    <p>这些基础的线性变换有一个共同特点：它们保持直线为直线，保持平行线平行。但是，当我们需要处理透视效果时，这些变换就不够用了。</p>
+                    <p><strong>线性变换的几何特性</strong>：保持直线为直线，保持平行线平行，保持原点不动。</p>
 
-                    <h3>2.2 三维齐次坐标</h3>
-                    <p>为了处理透视变换，我们需要引入齐次坐标。将2D点 <span class="inline-math">(x, y)</span> 表示为3D齐次坐标 <span class="inline-math">(x, y, 1)</span>。这样做的好处是，透视变换也可以用矩阵乘法来表示了。</p>
+                    <h3>2.2 单应变换的本质</h3>
+                    <p>单应变换是<strong>射影变换</strong>（projective transformation），<strong>不是线性变换</strong>！它描述的是两个平面之间的映射关系。</p>
 
-                    <h3>2.3 单应矩阵的定义</h3>
-                    <p>单应变换在齐次坐标系下可以表示为一个3×3矩阵：</p>
+                    <div class="problem-box">
+                        <h4>⚠️ 重要区别</h4>
+                        <ul>
+                            <li><strong>单应变换保持的性质</strong>：直线仍为直线，共线关系保持</li>
+                            <li><strong>单应变换不保持的性质</strong>：平行线不再平行，距离、角度、面积比例都可能改变</li>
+                            <li><strong>典型例子</strong>：透视变换，如从不同角度拍摄一个平面物体（如拍歪的身份证）</li>
+                        </ul>
+                    </div>
+
+                    <h3>2.3 为什么需要齐次坐标？</h3>
+                    <p>单应变换在普通坐标系下的表达式是非线性的：</p>
+                    <div class="math-block">
+                        <div class="katex-display" id="nonlinear-homography"></div>
+                    </div>
+
+                    <p>这种形式很难处理。为了让单应变换具有"线性性"，我们引入齐次坐标系。</p>
+
+                    <h3>2.4 齐次坐标下的线性性</h3>
+                    <p>将2D点 <span class="inline-math">(x, y)</span> 表示为3D齐次坐标 <span class="inline-math">(x, y, 1)</span>。在齐次坐标系下，单应变换可以表示为一个3×3矩阵：</p>
                     <div class="math-block">
                         <div class="katex-display" id="homography-matrix"></div>
                     </div>
 
-                    <p>其中H就是我们要求的单应矩阵。变换过程是：</p>
+                    <p>变换过程变成了矩阵乘法：</p>
                     <div class="math-block">
                         <div class="katex-display" id="homography-transform"></div>
                     </div>
 
                     <p>最后再转换回普通坐标：<span class="inline-math">x' = X'/Z', y' = Y'/Z'</span></p>
+
+                    <div class="highlight-box">
+                        <h4>🎯 关键洞察</h4>
+                        <p>齐次坐标的引入让我们能够用<strong>线性代数的工具</strong>来处理<strong>非线性的射影变换</strong>，这是一个数学上的巧妙技巧！</p>
+                    </div>
                 </section>
 
                 <!-- 3. 图像嵌入问题的数学建模 -->
